@@ -1,0 +1,90 @@
+﻿@page
+@model MoviesIndexModel
+@{
+    ViewData["Title"] = "Filmy";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-film me-2"></i>Repertuar filmów</h2>
+
+    <form method="get" class="d-flex">
+        <input asp-for="SearchTerm" class="form-control me-2" placeholder="Szukaj filmu..." style="width: 300px;" />
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="fas fa-search"></i>
+        </button>
+        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+        {
+            <a asp-page="/Movies/Index" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-times"></i>
+            </a>
+        }
+    </form>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.SearchTerm))
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-1"></i>
+        Wyniki wyszukiwania dla: <strong>@Model.SearchTerm</strong>
+        (znaleziono: @Model.Movies.Count() filmów)
+    </div>
+}
+
+<div class="row">
+    @foreach (var movie in Model.Movies)
+    {
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                @if (movie.Poster != null)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(movie.Poster)"
+                         class="card-img-top" alt="@movie.Title" style="height: 300px; object-fit: cover;">
+                }
+                else
+                {
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                        <i class="fas fa-film fa-3x text-muted"></i>
+                    </div>
+                }
+
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">@movie.Title</h5>
+                    <p class="card-text flex-grow-1">
+                        @(movie.Description.Length > 100 ? movie.Description.Substring(0, 100) + "..." : movie.Description)
+                    </p>
+
+                    <div class="movie-info mb-3">
+                        <small class="text-muted">
+                            <div><i class="fas fa-clock me-1"></i><strong>Czas:</strong> @movie.Duration min</div>
+                            <div><i class="fas fa-tags me-1"></i><strong>Gatunek:</strong> @movie.Genre</div>
+                            <div><i class="fas fa-user-tie me-1"></i><strong>Reżyser:</strong> @movie.Director</div>
+                            <div><i class="fas fa-star text-warning me-1"></i><strong>Ocena:</strong> @movie.Rating/10</div>
+                        </small>
+                    </div>
+
+                    <a asp-page="/Movies/Details" asp-route-id="@movie.MovieId" class="btn btn-primary">
+                        <i class="fas fa-ticket-alt me-1"></i>Zobacz seanse i kup bilet
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Movies.Any())
+{
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h3 class="text-muted">Brak filmów</h3>
+        <p class="text-muted">
+            @if (!string.IsNullOrEmpty(Model.SearchTerm))
+            {
+                <span>Nie znaleziono filmów dla frazy "@Model.SearchTerm"</span>
+            }
+            else
+            {
+                <span>Obecnie brak dostępnych filmów w repertuarze.</span>
+            }
+        </p>
+    </div>
+}

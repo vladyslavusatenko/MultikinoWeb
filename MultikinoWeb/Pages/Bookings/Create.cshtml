@@ -1,0 +1,452 @@
+﻿@page "{screeningId:int}"
+@model CreateBookingModel
+@{
+    ViewData["Title"] = "Rezerwacja biletu";
+}
+
+@if (Model.Screening == null)
+{
+    <div class="alert alert-danger">
+        <h4>Seans nie został znaleziony</h4>
+        <p>Przepraszamy, ale seans o podanym ID nie istnieje.</p>
+        <a asp-page="/Movies/Index" class="btn btn-primary">Powrót do filmów</a>
+    </div>
+}
+else
+{
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-ticket-alt me-2"></i>Rezerwacja biletu</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Informacje o seansie -->
+                    <div class="screening-info bg-light p-3 rounded mb-4">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5><i class="fas fa-film me-2"></i>@Model.Screening.Movie.Title</h5>
+                                <p class="mb-1">
+                                    <i class="fas fa-couch me-1"></i><strong>Sala:</strong> @Model.Screening.Hall.HallName (@Model.Screening.Hall.HallType)
+                                </p>
+                                <p class="mb-1">
+                                    <i class="fas fa-clock me-1"></i><strong>Data i godzina:</strong> @Model.Screening.StartTime.ToString("dd.MM.yyyy HH:mm")
+                                </p>
+                                <p class="mb-0">
+                                    <i class="fas fa-users me-1"></i><strong>Dostępne miejsca:</strong>
+                                    <span class="@(Model.Screening.AvailableSeats < 10 ? "text-danger" : "text-success")">
+                                        @Model.Screening.AvailableSeats / @Model.Screening.Hall.Capacity
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="price-display">
+                                    <small class="text-muted">Cena za bilet:</small>
+                                    <h4 class="text-success mb-0">@Model.Screening.TicketPrice.ToString("C")</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Screening.AvailableSeats == 0)
+                    {
+                        <div class="alert alert-warning text-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Seans wyprzedany!</strong> Brak dostępnych miejsc.
+                        </div>
+                        <div class="text-center">
+                            <a asp-page="/Movies/Details" asp-route-id="@Model.Screening.MovieId" class="btn btn-primary">
+                                Wybierz inny seans
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Formularz rezerwacji -->
+                        <form method="post" id="bookingForm">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <input type="hidden" asp-for="BookingData.ScreeningId" />
+                            <input type="hidden" asp-for="BookingData.TicketPrice" />
+                            <input type="hidden" asp-for="BookingData.NumberOfTickets" id="hiddenTicketCount" />
+                            <input type="hidden" asp-for="BookingData.SelectedSeats" id="selectedSeatsInput" />
+
+                            <!-- Sekcja wyboru miejsc -->
+                            <div class="seat-selection mb-4">
+                                <h6><i class="fas fa-couch me-2"></i>Wybierz miejsca w sali @Model.Screening.Hall.HallName</h6>
+
+                                <!-- Ekran -->
+                                <div class="screen text-center mb-3">
+                                    <i class="fas fa-tv me-2"></i>EKRAN
+                                </div>
+
+                                <!-- Mapa miejsc -->
+                                <div class="seat-map" id="seatMap">
+                                    @{
+                                        var rows = 10; // Ilość rzędów
+                                        var seatsPerRow = 12; // Miejsc w rzędzie
+                                        var occupiedSeats = new[] { "A1", "A2", "B5", "C8", "D10", "E3", "E4", "F1", "G7", "H12" }; // Przykładowe zajęte miejsca
+                                    }
+
+                                    @for (int row = 1; row <= rows; row++)
+                                    {
+                                        <div class="seat-row">
+                                            <span class="row-label">@((char)('A' + row - 1))</span>
+                                            @for (int seat = 1; seat <= seatsPerRow; seat++)
+                                            {
+                                                var seatId = $"{(char)('A' + row - 1)}{seat}";
+                                                var isOccupied = occupiedSeats.Contains(seatId);
+
+                                                <div class="seat @(isOccupied ? "occupied" : "available")"
+                                                     data-seat="@seatId"
+                                                     onclick="@(isOccupied ? "" : "toggleSeat(this)")">
+                                                    @seat
+                                                </div>
+                                            }
+                                            <span class="row-label">@((char)('A' + row - 1))</span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Legenda -->
+                                <div class="seat-legend text-center mt-3">
+                                    <div class="row justify-content-center">
+                                        <div class="col-auto">
+                                            <span class="legend-item me-4">
+                                                <div class="seat available d-inline-block me-1"></div>
+                                                <small>Dostępne</small>
+                                            </span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <span class="legend-item me-4">
+                                                <div class="seat selected d-inline-block me-1"></div>
+                                                <small>Wybrane</small>
+                                            </span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <span class="legend-item">
+                                                <div class="seat occupied d-inline-block me-1"></div>
+                                                <small>Zajęte</small>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Wybrane miejsca display -->
+                                <div class="selected-seats-display mt-3 p-3 bg-light rounded" id="selectedSeatsDisplay">
+                                    <em>Nie wybrano miejsc</em>
+                                </div>
+                            </div>
+
+                            <!-- Metoda płatności -->
+                            <div class="payment-section mb-4">
+                                <h6><i class="fas fa-credit-card me-2"></i>Metoda płatności</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <select asp-for="BookingData.PaymentMethod" class="form-select">
+                                            <option value="Card">💳 Karta płatnicza</option>
+                                            <option value="Cash">💵 Gotówka w kasie</option>
+                                            <option value="BLIK">📱 BLIK</option>
+                                            <option value="Transfer">🏦 Przelew bankowy</option>
+                                        </select>
+                                        <span asp-validation-for="BookingData.PaymentMethod" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Podsumowanie zamówienia -->
+                            <div class="order-summary bg-light p-4 rounded mb-4">
+                                <h6><i class="fas fa-calculator me-2"></i>Podsumowanie zamówienia</h6>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Cena za bilet:</span>
+                                            <span id="ticketPrice">@Model.Screening.TicketPrice.ToString("C")</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Liczba biletów:</span>
+                                            <span id="ticketCountDisplay">0</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Wybrane miejsca:</span>
+                                            <span id="selectedSeatsText">-</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between">
+                                            <strong>Łączna kwota:</strong>
+                                            <strong id="totalAmount" class="text-success">0,00 zł</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="qr-code-placeholder bg-white border rounded p-3">
+                                            <i class="fas fa-qrcode fa-3x text-muted"></i>
+                                            <br><small class="text-muted">Kod QR zostanie wygenerowany po płatności</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Checkbox regulaminu -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="termsAccept" required>
+                                <label class="form-check-label" for="termsAccept">
+                                    Akceptuję
+                                    <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#termsModal">regulamin</a>
+                                    i
+                                    <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#privacyModal">politykę prywatności</a>
+                                    <span class="text-danger">*</span>
+                                </label>
+                            </div>
+
+                            <!-- Przyciski akcji -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a asp-page="/Movies/Details" asp-route-id="@Model.Screening.MovieId"
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Anuluj i wróć
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg" id="confirmBookingBtn" disabled>
+                                    <i class="fas fa-shopping-cart me-2"></i>Potwierdź rezerwację
+                                </button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            @if (HttpContext.Session.GetString("UserId") == null)
+            {
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Uwaga:</strong> Aby dokonać rezerwacji, musisz być zalogowany.
+                    <a asp-page="/Account/Login" class="text-decoration-none">Zaloguj się tutaj</a>.
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Modal Regulamin -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-contract me-2"></i>Regulamin Multikina</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Postanowienia ogólne</h6>
+                <p>Niniejszy regulamin określa zasady korzystania z usług Multikina oraz warunki rezerwacji i zakupu biletów.</p>
+
+                <h6>2. Rezerwacja i zakup biletów</h6>
+                <p>Bilety można rezerwować online lub w kasie kina. Rezerwacja jest ważna przez 30 minut przed rozpoczęciem seansu.</p>
+
+                <h6>3. Anulowanie rezerwacji</h6>
+                <p>Rezerwację można anulować bezpłatnie do 2 godzin przed rozpoczęciem seansu.</p>
+
+                <h6>4. Zasady w kinie</h6>
+                <p>W kinie obowiązuje zakaz wnoszenia własnych napojów i przekąsek. Prosimy o ciche zachowanie podczas seansu.</p>
+
+                <h6>5. Polityka zwrotów</h6>
+                <p>Zwrot biletu możliwy jest do 24 godzin przed seansem z potrąceniem 10% opłaty administracyjnej.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Polityka Prywatności -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-shield-alt me-2"></i>Polityka Prywatności</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Administrator danych</h6>
+                <p>Administratorem Twoich danych osobowych jest Multikino Sp. z o.o.</p>
+
+                <h6>2. Cele przetwarzania</h6>
+                <p>Przetwarzamy Twoje dane w celu realizacji usługi rezerwacji biletów oraz w celach marketingowych za Twoją zgodą.</p>
+
+                <h6>3. Rodzaje zbieranych danych</h6>
+                <p>Zbieramy dane podane podczas rejestracji: imię, nazwisko, email oraz historię zakupów.</p>
+
+                <h6>4. Przekazywanie danych</h6>
+                <p>Twoje dane nie będą przekazywane podmiotom trzecim bez Twojej wyraźnej zgody.</p>
+
+                <h6>5. Twoje prawa</h6>
+                <p>Masz prawo do dostępu, sprostowania, usunięcia swoich danych oraz przenoszenia danych.</p>
+
+                <h6>6. Cookies</h6>
+                <p>Używamy plików cookies w celu poprawy funkcjonalności strony oraz analizy ruchu.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Zmienne globalne
+        let selectedSeats = [];
+        const maxSeats = 10;
+        const ticketPrice = @Model.Screening.TicketPrice;
+
+        // Funkcja przełączania miejsc
+        function toggleSeat(seatElement) {
+            const seatId = seatElement.getAttribute('data-seat');
+
+            if (seatElement.classList.contains('selected')) {
+                // Usuń zaznaczenie
+                seatElement.classList.remove('selected');
+                seatElement.classList.add('available');
+                selectedSeats = selectedSeats.filter(id => id !== seatId);
+            } else if (selectedSeats.length < maxSeats) {
+                // Dodaj zaznaczenie
+                seatElement.classList.remove('available');
+                seatElement.classList.add('selected');
+                selectedSeats.push(seatId);
+            } else {
+                // Pokaż alert gdy za dużo miejsc
+                showAlert(`Można wybrać maksymalnie ${maxSeats} miejsc.`, 'warning');
+                return;
+            }
+
+            updateSelectedSeats();
+            updateSummary();
+            updateSubmitButton();
+        }
+
+        // Aktualizacja wybranych miejsc
+        function updateSelectedSeats() {
+            document.getElementById('selectedSeatsInput').value = selectedSeats.join(',');
+            document.getElementById('hiddenTicketCount').value = selectedSeats.length;
+            document.getElementById('ticketCountDisplay').textContent = selectedSeats.length;
+        }
+
+        // Aktualizacja podsumowania
+        function updateSummary() {
+            const count = selectedSeats.length;
+            const total = count * ticketPrice;
+
+            // Aktualizuj łączną kwotę
+            document.getElementById('totalAmount').textContent = total.toLocaleString('pl-PL', {
+                style: 'currency',
+                currency: 'PLN'
+            });
+
+            // Aktualizuj wybrane miejsca
+            const selectedSeatsDisplay = document.getElementById('selectedSeatsDisplay');
+            const selectedSeatsText = document.getElementById('selectedSeatsText');
+
+            if (count > 0) {
+                const seatsText = selectedSeats.sort().join(', ');
+                selectedSeatsDisplay.innerHTML = `<strong>Wybrane miejsca:</strong> ${seatsText}`;
+                selectedSeatsText.textContent = seatsText;
+            } else {
+                selectedSeatsDisplay.innerHTML = '<em>Nie wybrano miejsc</em>';
+                selectedSeatsText.textContent = '-';
+            }
+        }
+
+        // Aktualizacja przycisku potwierdzenia
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('confirmBookingBtn');
+            const termsCheckbox = document.getElementById('termsAccept');
+
+            if (selectedSeats.length > 0 && termsCheckbox.checked) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('btn-secondary');
+                submitBtn.classList.add('btn-success');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.remove('btn-success');
+                submitBtn.classList.add('btn-secondary');
+            }
+        }
+
+        // Walidacja formularza
+        function validateForm() {
+            if (selectedSeats.length === 0) {
+                showAlert('Musisz wybrać przynajmniej jedno miejsce.', 'danger');
+                return false;
+            }
+
+            const termsCheckbox = document.getElementById('termsAccept');
+            if (!termsCheckbox.checked) {
+                showAlert('Musisz zaakceptować regulamin i politykę prywatności.', 'danger');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Pokazywanie alertów
+        function showAlert(message, type) {
+            // Usuń poprzednie alerty
+            const existingAlerts = document.querySelectorAll('.temp-alert');
+            existingAlerts.forEach(alert => alert.remove());
+
+            // Utwórz nowy alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show temp-alert`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            // Dodaj alert na górę formularza
+            const form = document.getElementById('bookingForm');
+            form.insertBefore(alertDiv, form.firstChild);
+
+            // Usuń alert automatycznie po 5 sekundach
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Inicjalizacja po załadowaniu strony
+        document.addEventListener('DOMContentLoaded', function() {
+            // Nasłuchuj zmian w checkbox regulaminu
+            const termsCheckbox = document.getElementById('termsAccept');
+            termsCheckbox.addEventListener('change', updateSubmitButton);
+
+            // Dodaj walidację do formularza
+            const form = document.getElementById('bookingForm');
+            form.addEventListener('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                }
+            });
+
+            // Inicjalizuj stan początkowy
+            updateSummary();
+            updateSubmitButton();
+
+            // Dodaj efekt hover do miejsc dostępnych
+            const availableSeats = document.querySelectorAll('.seat.available');
+            availableSeats.forEach(seat => {
+                seat.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = 'scale(1.1)';
+                        this.style.transition = 'transform 0.2s ease';
+                    }
+                });
+
+                seat.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = 'scale(1)';
+                    }
+                });
+            });
+        });
+    </script>
+}

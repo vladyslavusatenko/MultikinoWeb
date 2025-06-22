@@ -1,0 +1,121 @@
+﻿@page
+@model MyBookingsModel
+@{
+    ViewData["Title"] = "Moje rezerwacje";
+}
+
+@if (HttpContext.Session.GetString("UserId") == null)
+{
+    <div class="alert alert-warning">
+        <h4>Dostęp ograniczony</h4>
+        <p>Aby zobaczyć swoje rezerwacje, musisz być zalogowany.</p>
+        <a asp-page="/Account/Login" class="btn btn-primary">Zaloguj się</a>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-ticket-alt me-2"></i>Moje rezerwacje</h2>
+        <a asp-page="/Movies/Index" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Nowa rezerwacja
+        </a>
+    </div>
+
+    @if (Model.Bookings.Any())
+    {
+        <div class="row">
+            @foreach (var booking in Model.Bookings)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 @(booking.Status == "Cancelled" ? "border-danger" : "border-success")">
+                        <div class="card-header @(booking.Status == "Cancelled" ? "bg-danger" : "bg-success") text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Rezerwacja #@booking.BookingId</h6>
+                                <span class="badge @(booking.Status == "Cancelled" ? "bg-light text-dark" : "bg-light text-dark")">
+                                    @(booking.Status == "Confirmed" ? "Potwierdzona" :
+                                        booking.Status == "Cancelled" ? "Anulowana" : booking.Status)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">@booking.Screening.Movie.Title</h5>
+
+                            <div class="booking-details mb-3">
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <strong>Data:</strong> @booking.Screening.StartTime.ToString("dd.MM.yyyy")
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <strong>Godzina:</strong> @booking.Screening.StartTime.ToString("HH:mm")
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-couch me-1"></i>
+                                    <strong>Sala:</strong> @booking.Screening.Hall.HallName
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-ticket-alt me-1"></i>
+                                    <strong>Bilety:</strong> @booking.NumberOfTickets szt.
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-credit-card me-1"></i>
+                                    <strong>Płatność:</strong> @(booking.PaymentMethod == "Card" ? "Karta" :
+                        booking.PaymentMethod == "Cash" ? "Gotówka" :
+                        booking.PaymentMethod == "BLIK" ? "BLIK" :
+                        booking.PaymentMethod == "Transfer" ? "Przelew" : booking.PaymentMethod)
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-calendar-plus me-1"></i>
+                                    <strong>Rezerwacja:</strong> @booking.BookingDate.ToString("dd.MM.yyyy HH:mm")
+                                </p>
+                            </div>
+
+                            <div class="total-amount mb-3">
+                                <h5 class="text-success">
+                                    <i class="fas fa-coins me-1"></i>
+                                    Łącznie: @booking.TotalAmount.ToString("C")
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="d-grid gap-2">
+                                <a asp-page="/Bookings/Details" asp-route-id="@booking.BookingId"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-info-circle me-1"></i>Szczegóły
+                                </a>
+
+                                @if (booking.Status == "Confirmed" && booking.Screening.StartTime > DateTime.Now.AddHours(2))
+                                {
+                                    <form method="post" asp-page-handler="Cancel" asp-route-id="@booking.BookingId"
+                                          class="d-inline" onsubmit="return confirm('Czy na pewno chcesz anulować tę rezerwację?')">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                            <i class="fas fa-times me-1"></i>Anuluj
+                                        </button>
+                                    </form>
+                                }
+                                else if (booking.Status == "Confirmed")
+                                {
+                                    <small class="text-muted text-center d-block">
+                                        Anulowanie możliwe do 2h przed seansem
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+            <h3 class="text-muted">Brak rezerwacji</h3>
+            <p class="text-muted">Nie masz jeszcze żadnych rezerwacji.</p>
+            <a asp-page="/Movies/Index" class="btn btn-primary">
+                <i class="fas fa-film me-1"></i>Sprawdź repertuar
+            </a>
+        </div>
+    }
+}

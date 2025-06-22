@@ -1,0 +1,120 @@
+﻿@page
+@model ProfileModel
+@{
+    ViewData["Title"] = "Profil użytkownika";
+}
+
+@if (HttpContext.Session.GetString("UserId") == null)
+{
+    <div class="alert alert-warning">
+        <h4>Dostęp ograniczony</h4>
+        <p>Aby zobaczyć profil, musisz być zalogowany.</p>
+        <a asp-page="/Account/Login" class="btn btn-primary">Zaloguj się</a>
+    </div>
+}
+else
+{
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-user-circle me-2"></i>Profil użytkownika</h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.User != null)
+                    {
+                        <form method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label asp-for="ProfileData.FirstName" class="form-label">
+                                            <i class="fas fa-user me-1"></i>Imię
+                                        </label>
+                                        <input asp-for="ProfileData.FirstName" class="form-control" />
+                                        <span asp-validation-for="ProfileData.FirstName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label asp-for="ProfileData.LastName" class="form-label">
+                                            <i class="fas fa-user me-1"></i>Nazwisko
+                                        </label>
+                                        <input asp-for="ProfileData.LastName" class="form-control" />
+                                        <span asp-validation-for="ProfileData.LastName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label asp-for="ProfileData.Email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>Email
+                                </label>
+                                <input asp-for="ProfileData.Email" class="form-control" readonly />
+                                <small class="text-muted">Email nie może być zmieniony</small>
+                            </div>
+
+                            <div class="profile-info bg-light p-3 rounded mb-4">
+                                <h6><i class="fas fa-info-circle me-2"></i>Informacje o koncie</h6>
+                                <p class="mb-1">
+                                    <strong>Rola:</strong>
+                                    <span class="badge bg-@(Model.User.Role == "Admin" ? "danger" : "primary")">
+                                        @(Model.User.Role == "Admin" ? "Administrator" : "Użytkownik")
+                                    </span>
+                                </p>
+                                <p class="mb-1"><strong>Data utworzenia:</strong> @Model.User.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                                <p class="mb-0">
+                                    <strong>Status:</strong>
+                                    <span class="badge bg-success">Aktywne</span>
+                                </p>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-1"></i>Zapisz zmiany
+                                </button>
+                                <a asp-page="/Account/ChangePassword" class="btn btn-outline-primary">
+                                    <i class="fas fa-key me-1"></i>Zmień hasło
+                                </a>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <!-- Statystyki użytkownika -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Twoje statystyki</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <h3 class="text-primary">@Model.TotalBookings</h3>
+                                <p class="text-muted">Łączne rezerwacje</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <h3 class="text-success">@Model.TotalSpent.ToString("C")</h3>
+                                <p class="text-muted">Łączne wydatki</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <h3 class="text-warning">@Model.TotalTickets</h3>
+                                <p class="text-muted">Kupione bilety</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
