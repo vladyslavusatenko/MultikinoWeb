@@ -31,9 +31,12 @@ else
                         <div class="card-header @(booking.Status == "Cancelled" ? "bg-danger" : "bg-success") text-white">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">Rezerwacja #@booking.BookingId</h6>
-                                <span class="badge @(booking.Status == "Cancelled" ? "bg-light text-dark" : "bg-light text-dark")">
+                                <span class="badge bg-white
+                                    @(booking.Status == "Confirmed" ? "text-success" :
+                                      booking.Status == "Cancelled" ? "text-danger" : "text-warning")">
                                     @(booking.Status == "Confirmed" ? "Potwierdzona" :
-                                        booking.Status == "Cancelled" ? "Anulowana" : booking.Status)
+                                        booking.Status == "Cancelled" ? "Anulowana" :
+                                        booking.Status == "Pending" ? "Oczekująca" : booking.Status)
                                 </span>
                             </div>
                         </div>

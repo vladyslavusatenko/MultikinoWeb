@@ -12,6 +12,7 @@ namespace MultikinoWeb.Services
         Task<IEnumerable<User>> GetAllUsersAsync();
         Task<bool> UpdateUserAsync(User user);
         Task<bool> DeleteUserAsync(int id);
+        Task<bool> ChangePasswordAsync(int userId, ChangePasswordViewModel model);
         string HashPassword(string password);
         bool VerifyPassword(string password, string hash);
     }

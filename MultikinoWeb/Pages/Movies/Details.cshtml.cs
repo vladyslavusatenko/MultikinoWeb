@@ -1,5 +1,4 @@
-﻿// Pages/Movies/Details.cshtml.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MultikinoWeb.Data;
@@ -17,7 +16,7 @@ namespace MultikinoWeb.Pages.Movies
         }
 
         public Movie? Movie { get; set; }
-        public List<Screening> Screenings { get; set; } = new();
+        public IEnumerable<Screening> AvailableScreenings { get; set; } = new List<Screening>();
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
@@ -29,8 +28,8 @@ namespace MultikinoWeb.Pages.Movies
                 return NotFound();
             }
 
-            // Pobierz seanse dla tego filmu (tylko przyszłe)
-            Screenings = await _context.Screenings
+            // Get available screenings for this movie (future screenings only)
+            AvailableScreenings = await _context.Screenings
                 .Include(s => s.Hall)
                 .Where(s => s.MovieId == id && s.StartTime > DateTime.Now)
                 .OrderBy(s => s.StartTime)

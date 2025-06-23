@@ -107,22 +107,22 @@ static async Task SeedData(MultikinoDbContext context)
         new MultikinoWeb.Models.Movie
         {
             Title = "Avatar: Droga wody",
-            Description = "Kontynuacja przygód rodziny Sully na planecie Pandora",
+            Description = "Akcja filmu \"Avatar: Istota wody\" rozgrywa się ponad dziesięć lat po wydarzeniach z pierwszej części. To opowieść o rodzinie Jake'a i Neytiri oraz ich staraniach, by zapewnić bezpieczeństwo sobie i swoim dzieciom, mimo tragedii, których wspólnie doświadczają i bitew, które muszą stoczyć, aby przeżyć.",
             Duration = 192,
             Genre = "Sci-Fi",
             Director = "James Cameron",
-            ReleaseDate = DateTime.Now.AddDays(30),
+            ReleaseDate = DateTime.Now.AddDays(-30),
             Rating = 8.5m,
             IsActive = true
         },
         new MultikinoWeb.Models.Movie
         {
             Title = "Top Gun: Maverick",
-            Description = "Pete 'Maverick' Mitchell wraca jako instruktor elitarnych pilotów",
+            Description = "Nieustraszony buntownik komandor Pete \"Maverick\" (Tom Cruise), lubiący łamać protokoły i przeciwstawiać się rozkazom, szefuje programowi hipersonicznych samolotów zwiadowczych. Planowane jest jednak jego zamknięcie i zastąpienie pilotów dronami, chyba że podczas testu osiągnie prędkość 10-krotnie większą od dźwięku.",
             Duration = 130,
             Genre = "Akcja",
             Director = "Joseph Kosinski",
-            ReleaseDate = DateTime.Now.AddDays(60),
+            ReleaseDate = DateTime.Now.AddDays(-60),
             Rating = 8.7m,
             IsActive = true
         }
@@ -138,8 +138,8 @@ static async Task SeedData(MultikinoDbContext context)
         {
             MovieId = 1,
             HallId = 1,
-            StartTime = DateTime.Now.AddHours(2),
-            EndTime = DateTime.Now.AddHours(5),
+            StartTime = DateTime.Now.AddDays(7).AddHours(2),
+            EndTime = DateTime.Now.AddDays(7).AddHours(5),
             TicketPrice = 25.00m,
             AvailableSeats = 120
         },
@@ -147,8 +147,8 @@ static async Task SeedData(MultikinoDbContext context)
         {
             MovieId = 1,
             HallId = 2,
-            StartTime = DateTime.Now.AddHours(6),
-            EndTime = DateTime.Now.AddHours(9),
+            StartTime = DateTime.Now.AddDays(5).AddHours(6),
+            EndTime = DateTime.Now.AddDays(5).AddHours(9),
             TicketPrice = 35.00m,
             AvailableSeats = 80
         },
@@ -156,8 +156,8 @@ static async Task SeedData(MultikinoDbContext context)
         {
             MovieId = 2,
             HallId = 3,
-            StartTime = DateTime.Now.AddHours(3),
-            EndTime = DateTime.Now.AddHours(5),
+            StartTime = DateTime.Now.AddDays(6).AddHours(3),
+            EndTime = DateTime.Now.AddDays(6).AddHours(5),
             TicketPrice = 30.00m,
             AvailableSeats = 200
         }

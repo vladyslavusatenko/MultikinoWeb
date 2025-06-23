@@ -79,6 +79,23 @@ namespace MultikinoWeb.Services
             return false;
         }
 
+        public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordViewModel model)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null || !user.IsActive)
+                return false;
+
+            // Verify current password
+            if (!VerifyPassword(model.CurrentPassword, user.PasswordHash))
+                return false;
+
+            // Update password
+            user.PasswordHash = HashPassword(model.NewPassword);
+
+            return await _context.SaveChangesAsync() > 0;
+        }
+
         public string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);

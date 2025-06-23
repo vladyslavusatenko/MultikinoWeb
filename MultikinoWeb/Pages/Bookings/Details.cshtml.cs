@@ -1,16 +1,15 @@
-﻿// Bookings/Details.cshtml.cs - NOWY PLIK
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MultikinoWeb.Models;
 using MultikinoWeb.Services;
 
 namespace MultikinoWeb.Pages.Bookings
 {
-    public class BookingDetailsModel : PageModel
+    public class DetailsModel : PageModel
     {
         private readonly IBookingService _bookingService;
 
-        public BookingDetailsModel(IBookingService bookingService)
+        public DetailsModel(IBookingService bookingService)
         {
             _bookingService = bookingService;
         }
@@ -29,7 +28,8 @@ namespace MultikinoWeb.Pages.Bookings
 
             if (Booking == null || (Booking.UserId != userId && HttpContext.Session.GetString("UserRole") != "Admin"))
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Rezerwacja nie została znaleziona lub nie masz do niej dostępu.";
+                return RedirectToPage("/Bookings/MyBookings");
             }
 
             return Page();

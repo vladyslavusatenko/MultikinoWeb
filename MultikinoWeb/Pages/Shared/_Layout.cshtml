@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" class="h-100">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
-<body>
+<body class="d-flex flex-column h-100">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
             <div class="container">
@@ -21,15 +21,15 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-page="/Index">Strona główna</a>
+                            <a class="nav-link text-white" asp-page="/Index">Strona główna</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-page="/Movies/Index">Filmy</a>
+                            <a class="nav-link text-white" asp-page="/Movies/Index">Filmy</a>
                         </li>
                         @if (Context.Session.GetString("UserRole") == "Admin")
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                     Panel Admin
                                 </a>
                                 <ul class="dropdown-menu">
@@ -45,24 +45,40 @@
                         @if (Context.Session.GetString("UserId") != null)
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                    @Context.Session.GetString("UserName")
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle me-1"></i>@Context.Session.GetString("UserName")
                                 </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-page="/Account/Profile">Profil</a></li>
-                                    <li><a class="dropdown-item" asp-page="/Bookings/MyBookings">Moje rezerwacje</a></li>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" asp-page="/Account/Profile">
+                                            <i class="fas fa-user me-2"></i>Profil
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-page="/Bookings/MyBookings">
+                                            <i class="fas fa-ticket-alt me-2"></i>Moje rezerwacje
+                                        </a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" asp-page="/Account/Logout">Wyloguj</a></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" asp-page="/Account/Logout">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Wyloguj
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-page="/Account/Login">Zaloguj</a>
+                                <a class="nav-link text-white" asp-page="/Account/Login">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Zaloguj
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-page="/Account/Register">Rejestracja</a>
+                                <a class="nav-link text-white" asp-page="/Account/Register">
+                                    <i class="fas fa-user-plus me-1"></i>Rejestracja
+                                </a>
                             </li>
                         }
                     </ul>
@@ -71,11 +87,12 @@
         </nav>
     </header>
 
-    <div class="container">
+    <div class="container flex-fill">
         <main role="main" class="pb-3">
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
                     @TempData["SuccessMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -83,6 +100,7 @@
             @if (TempData["ErrorMessage"] != null)
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
                     @TempData["ErrorMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -91,17 +109,19 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-light mt-5">
+    <footer class="footer bg-dark text-white mt-auto">
         <div class="container py-3">
-            <div class="row">
+            <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p>&copy; 2025 - Multikino - Projekt bazodanowy</p>
+                    <p class="mb-0 text-white">&copy; 2025 - Multikino - Projekt bazodanowy</p>
                 </div>
                 <div class="col-md-6">
                     <div class="text-end">
-                        <strong>
+                        <strong class="text-white">
                             Status bazy danych:
-                            <span class="badge bg-success">Połączono (SQL Server)</span>
+                            <span class="badge bg-success ms-1">
+                                <i class="fas fa-database me-1"></i>Połączono (SQL Server)
+                            </span>
                         </strong>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 ﻿@page "{id:int}"
-@model BookingDetailsModel
+@model DetailsModel
 @{
     ViewData["Title"] = "Szczegóły rezerwacji";
 }
@@ -17,7 +17,7 @@ else
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow">
-                <div class="card-header bg-@(Model.Booking.Status == "Confirmed" ? "success" : Model.Booking.Status == "Cancelled" ? "danger" : "warning") text-white">
+                <div class="card-header @(Model.Booking.Status == "Confirmed" ? "bg-success" : Model.Booking.Status == "Cancelled" ? "bg-danger" : "bg-warning") text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h3><i class="fas fa-ticket-alt me-2"></i>Rezerwacja #@Model.Booking.BookingId</h3>
                         <span class="badge bg-light text-dark fs-6">
@@ -117,7 +117,7 @@ else
                                 @foreach (var ticket in Model.Booking.Tickets)
                                 {
                                     <div class="col-md-6 mb-2">
-                                        <div class="ticket-item p-2 border rounded">
+                                        <div class="ticket-item p-2 border rounded bg-light">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
                                                     <strong>Miejsce: @ticket.SeatNumber</strong>
@@ -160,12 +160,44 @@ else
                         </div>
                     </div>
 
+                    <!-- Informacja o anulowaniu -->
+                    @if (Model.Booking.Status == "Confirmed")
+                    {
+                        @if (Model.Booking.Screening.StartTime > DateTime.Now.AddHours(2))
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Możesz anulować rezerwację bezpłatnie do 2 godzin przed rozpoczęciem seansu.</strong>
+                                <br>
+                                Pozostało: @((Model.Booking.Screening.StartTime - DateTime.Now).Days) dni,
+                                @((Model.Booking.Screening.StartTime - DateTime.Now).Hours) godzin,
+                                @((Model.Booking.Screening.StartTime - DateTime.Now).Minutes) minut
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Anulowanie rezerwacji nie jest już możliwe.</strong>
+                                <br>
+                                Rezerwację można anulować jedynie do 2 godzin przed rozpoczęciem seansu.
+                            </div>
+                        }
+                    }
+                    else if (Model.Booking.Status == "Cancelled")
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-ban me-2"></i>
+                            <strong>Ta rezerwacja została anulowana.</strong>
+                        </div>
+                    }
+
                     <!-- Akcje -->
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         @if (Model.Booking.Status == "Confirmed" && Model.Booking.Screening.StartTime > DateTime.Now.AddHours(2))
                         {
                             <form method="post" asp-page-handler="Cancel" asp-route-id="@Model.Booking.BookingId"
-                                  class="d-inline" onsubmit="return confirm('Czy na pewno chcesz anulować tę rezerwację?')">
+                                  class="d-inline" onsubmit="return confirm('Czy na pewno chcesz anulować tę rezerwację? Tej operacji nie można cofnąć.')">
                                 <button type="submit" class="btn btn-outline-danger">
                                     <i class="fas fa-times me-1"></i>Anuluj rezerwację
                                 </button>
@@ -175,11 +207,63 @@ else
                             <i class="fas fa-arrow-left me-1"></i>Powrót do listy
                         </a>
                         <button onclick="window.print()" class="btn btn-outline-primary no-print">
-                            <i class="fas fa-print me-1"></i>Drukuj
+                            <i class="fas fa-print me-1"></i>Drukuj bilet
                         </button>
                     </div>
                 </div>
             </div>
+
+            <!-- QR Code do biletu (jeśli rezerwacja potwierdzona) -->
+            @if (Model.Booking.Status == "Confirmed")
+            {
+                <div class="card shadow mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5><i class="fas fa-qrcode me-2"></i>Kod QR biletu</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="qr-placeholder bg-light border rounded p-4 d-inline-block">
+                            <i class="fas fa-qrcode fa-5x text-muted"></i>
+                            <br>
+                            <small class="text-muted mt-2 d-block">Kod QR #@Model.Booking.BookingId</small>
+                            <small class="text-muted">Pokaż ten kod przy wejściu do kina</small>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
+}
+
+@section Scripts {
+    <script>
+        // Automat do aktualizowania czasu pozostałego do anulowania
+        function updateCountdown() {
+            var startTime = new Date('@Model.Booking?.Screening.StartTime.ToString("yyyy-MM-ddTHH:mm:ss")');
+            var now = new Date();
+            var timeLeft = startTime.getTime() - now.getTime() - (2 * 60 * 60 * 1000); // 2 godziny przed
+
+            if (timeLeft > 0) {
+                var days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                var hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
+                var countdownText = days + " dni, " + hours + " godzin, " + minutes + " minut";
+                var remainingElement = document.querySelector('.alert-info');
+                if (remainingElement && remainingElement.innerHTML.includes('Pozostało:')) {
+                    remainingElement.innerHTML = remainingElement.innerHTML.replace(
+                        /Pozostało:.*$/,
+                        'Pozostało: ' + countdownText
+                    );
+                }
+            }
+        }
+
+        // Aktualizuj co minutę
+        @if (Model.Booking?.Status == "Confirmed" && Model.Booking.Screening.StartTime > DateTime.Now.AddHours(2))
+        {
+            <text>
+                setInterval(updateCountdown, 60000);
+            </text>
+        }
+    </script>
 }
