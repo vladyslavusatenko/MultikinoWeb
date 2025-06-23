@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Movies/Details.cshtml.cs - POPRAWIONA WERSJA
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MultikinoWeb.Models;
 using MultikinoWeb.Services;
@@ -7,53 +8,25 @@ namespace MultikinoWeb.Pages.Movies
 {
     public class MovieDetailsModel : PageModel
     {
-        private readonly IBookingService _bookingService;
+        private readonly IMovieService _movieService;
 
-        public MovieDetailsModel(IBookingService bookingService)
+        public MovieDetailsModel(IMovieService movieService)
         {
-            _bookingService = bookingService;
+            _movieService = movieService;
         }
 
-        public Booking? Booking { get; set; }
+        public Movie? Movie { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-            {
-                return RedirectToPage("/Account/Login");
-            }
+            Movie = await _movieService.GetMovieByIdAsync(id);
 
-            Booking = await _bookingService.GetBookingByIdAsync(id);
-
-            if (Booking == null || (Booking.UserId != userId && HttpContext.Session.GetString("UserRole") != "Admin"))
+            if (Movie == null)
             {
                 return NotFound();
             }
 
             return Page();
-        }
-
-        public async Task<IActionResult> OnPostCancelAsync(int id)
-        {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-            {
-                return RedirectToPage("/Account/Login");
-            }
-
-            var result = await _bookingService.CancelBookingAsync(id, userId.Value);
-
-            if (result)
-            {
-                TempData["SuccessMessage"] = "Rezerwacja została anulowana pomyślnie.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Nie można anulować tej rezerwacji. Sprawdź czy anulowanie jest możliwe do 2h przed seansem.";
-            }
-
-            return RedirectToPage("/Bookings/MyBookings");
         }
     }
 }

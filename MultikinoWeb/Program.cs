@@ -3,6 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using MultikinoWeb.Data;
 using MultikinoWeb.Services;
 
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Konfiguracja bazy danych
@@ -30,6 +35,17 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
 });
 
+var supportedCultures = new[] { new CultureInfo("en-US") }; // 👈 Change to desired culture
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("en-US"); // 👈 Force culture
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders.Clear(); // 👈 Disables auto-detection (system/browser)
+});
+
+
 var app = builder.Build();
 
 // Inicjalizacja bazy danych
@@ -49,6 +65,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(locOptions.Value);
+
 app.UseSession();
 app.UseAuthorization();
 app.MapRazorPages();
@@ -92,7 +111,7 @@ static async Task SeedData(MultikinoDbContext context)
             Duration = 192,
             Genre = "Sci-Fi",
             Director = "James Cameron",
-            ReleaseDate = DateTime.Now.AddDays(-30),
+            ReleaseDate = DateTime.Now.AddDays(30),
             Rating = 8.5m,
             IsActive = true
         },
@@ -103,7 +122,7 @@ static async Task SeedData(MultikinoDbContext context)
             Duration = 130,
             Genre = "Akcja",
             Director = "Joseph Kosinski",
-            ReleaseDate = DateTime.Now.AddDays(-60),
+            ReleaseDate = DateTime.Now.AddDays(60),
             Rating = 8.7m,
             IsActive = true
         }

@@ -1,186 +1,174 @@
 ﻿@page "{id:int}"
 @model MovieDetailsModel
 @{
-    ViewData["Title"] = "Szczegóły rezerwacji";
+    ViewData["Title"] = Model.Movie?.Title ?? "Szczegóły filmu";
 }
 
-@if (Model.Booking == null)
+@if (Model.Movie == null)
 {
     <div class="alert alert-danger">
-        <h4>Rezerwacja nie została znaleziona</h4>
-        <p>Przepraszamy, ale rezerwacja o podanym ID nie istnieje lub nie masz do niej dostępu.</p>
-        <a asp-page="/Bookings/MyBookings" class="btn btn-primary">Powrót do moich rezerwacji</a>
+        <h4>Film nie został znaleziony</h4>
+        <p>Przepraszamy, ale film o podanym ID nie istnieje.</p>
+        <a asp-page="/Movies/Index" class="btn btn-primary">Powrót do filmów</a>
     </div>
 }
 else
 {
-    <div class="row justify-content-center">
+    <div class="row">
+        <div class="col-md-4">
+            @if (Model.Movie.Poster != null)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Movie.Poster)"
+                     class="img-fluid rounded shadow" alt="@Model.Movie.Title" style="width: 100%;">
+            }
+            else
+            {
+                <div class="poster-placeholder bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
+                    <i class="fas fa-film fa-5x text-muted"></i>
+                </div>
+            }
+        </div>
+        
         <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-@(Model.Booking.Status == "Confirmed" ? "success" : Model.Booking.Status == "Cancelled" ? "danger" : "warning") text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h3><i class="fas fa-ticket-alt me-2"></i>Rezerwacja #@Model.Booking.BookingId</h3>
-                        <span class="badge bg-light text-dark fs-6">
-                            @(Model.Booking.Status == "Confirmed" ? "Potwierdzona" :
-                                Model.Booking.Status == "Cancelled" ? "Anulowana" : Model.Booking.Status)
-                        </span>
+            <div class="movie-details">
+                <h1 class="mb-3">@Model.Movie.Title</h1>
+                
+                <div class="movie-info mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="fas fa-user-tie me-2"></i>
+                                <strong>Reżyser:</strong> @Model.Movie.Director
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-tags me-2"></i>
+                                <strong>Gatunek:</strong> @Model.Movie.Genre
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-clock me-2"></i>
+                                <strong>Czas trwania:</strong> @Model.Movie.Duration min
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="fas fa-calendar me-2"></i>
+                                <strong>Premiera:</strong> @Model.Movie.ReleaseDate.ToString("dd.MM.yyyy")
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-star text-warning me-2"></i>
+                                <strong>Ocena:</strong> @Model.Movie.Rating/10
+                            </p>
+                        </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <!-- Informacje o filmie -->
-                    <div class="movie-info bg-light p-3 rounded mb-4">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <h5><i class="fas fa-film me-2"></i>@Model.Booking.Screening.Movie.Title</h5>
-                                <p class="mb-1">
-                                    <i class="fas fa-user-tie me-1"></i><strong>Reżyser:</strong> @Model.Booking.Screening.Movie.Director
-                                </p>
-                                <p class="mb-1">
-                                    <i class="fas fa-tags me-1"></i><strong>Gatunek:</strong> @Model.Booking.Screening.Movie.Genre
-                                </p>
-                                <p class="mb-0">
-                                    <i class="fas fa-clock me-1"></i><strong>Czas trwania:</strong> @Model.Booking.Screening.Movie.Duration min
-                                </p>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="rating-display text-center">
-                                    <div class="rating-stars">
-                                        <i class="fas fa-star text-warning"></i>
-                                        <span class="ms-1">@Model.Booking.Screening.Movie.Rating/10</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Szczegóły seansu -->
-                    <div class="screening-details mb-4">
-                        <h6><i class="fas fa-calendar-alt me-2"></i>Szczegóły seansu</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="mb-1">
-                                    <i class="fas fa-calendar me-1"></i><strong>Data:</strong>
-                                    @Model.Booking.Screening.StartTime.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"))
-                                </p>
-                                <p class="mb-1">
-                                    <i class="fas fa-clock me-1"></i><strong>Godzina:</strong>
-                                    @Model.Booking.Screening.StartTime.ToString("HH:mm") - @Model.Booking.Screening.EndTime.ToString("HH:mm")
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-1">
-                                    <i class="fas fa-couch me-1"></i><strong>Sala:</strong> @Model.Booking.Screening.Hall.HallName
-                                </p>
-                                <p class="mb-1">
-                                    <i class="fas fa-crown me-1"></i><strong>Typ sali:</strong>
-                                    <span class="badge bg-secondary">@Model.Booking.Screening.Hall.HallType</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Szczegóły rezerwacji -->
-                    <div class="booking-details mb-4">
-                        <h6><i class="fas fa-info-circle me-2"></i>Szczegóły rezerwacji</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="mb-1">
-                                    <i class="fas fa-ticket-alt me-1"></i><strong>Liczba biletów:</strong> @Model.Booking.NumberOfTickets
-                                </p>
-                                <p class="mb-1">
-                                    <i class="fas fa-credit-card me-1"></i><strong>Metoda płatności:</strong>
-                                    @(Model.Booking.PaymentMethod == "Card" ? "Karta płatnicza" :
-                                        Model.Booking.PaymentMethod == "Cash" ? "Gotówka" :
-                                        Model.Booking.PaymentMethod == "BLIK" ? "BLIK" :
-                                        Model.Booking.PaymentMethod == "Transfer" ? "Przelew" : Model.Booking.PaymentMethod)
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-1">
-                                    <i class="fas fa-calendar-plus me-1"></i><strong>Data rezerwacji:</strong>
-                                    @Model.Booking.BookingDate.ToString("dd.MM.yyyy HH:mm")
-                                </p>
-                                <p class="mb-1">
-                                    <i class="fas fa-user me-1"></i><strong>Zarezerwowane przez:</strong>
-                                    @Model.Booking.User.FirstName @Model.Booking.User.LastName
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Lista biletów -->
-                    @if (Model.Booking.Tickets.Any())
-                    {
-                        <div class="tickets-list mb-4">
-                            <h6><i class="fas fa-list me-2"></i>Twoje bilety</h6>
-                            <div class="row">
-                                @foreach (var ticket in Model.Booking.Tickets)
-                                {
-                                    <div class="col-md-6 mb-2">
-                                        <div class="ticket-item p-2 border rounded">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <strong>Miejsce: @ticket.SeatNumber</strong>
-                                                    <br>
-                                                    <small class="text-muted">Cena: @ticket.Price.ToString("C")</small>
-                                                </div>
-                                                <div>
-                                                    @if (ticket.IsUsed)
-                                                    {
-                                                        <span class="badge bg-secondary">Wykorzystany</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-success">Ważny</span>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    }
-
-                    <!-- Podsumowanie finansowe -->
-                    <div class="price-summary bg-light p-3 rounded mb-4">
-                        <h6><i class="fas fa-calculator me-2"></i>Podsumowanie</h6>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Cena za bilet:</span>
-                            <span>@Model.Booking.Screening.TicketPrice.ToString("C")</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Liczba biletów:</span>
-                            <span>@Model.Booking.NumberOfTickets</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between">
-                            <strong>Łączna kwota:</strong>
-                            <strong class="text-success">@Model.Booking.TotalAmount.ToString("C")</strong>
-                        </div>
-                    </div>
-
-                    <!-- Akcje -->
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        @if (Model.Booking.Status == "Confirmed" && Model.Booking.Screening.StartTime > DateTime.Now.AddHours(2))
-                        {
-                            <form method="post" asp-page-handler="Cancel" asp-route-id="@Model.Booking.BookingId"
-                                  class="d-inline" onsubmit="return confirm('Czy na pewno chcesz anulować tę rezerwację?')">
-                                <button type="submit" class="btn btn-outline-danger">
-                                    <i class="fas fa-times me-1"></i>Anuluj rezerwację
-                                </button>
-                            </form>
-                        }
-                        <a asp-page="/Bookings/MyBookings" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i>Powrót do listy
-                        </a>
-                        <button onclick="window.print()" class="btn btn-outline-primary no-print">
-                            <i class="fas fa-print me-1"></i>Drukuj
-                        </button>
-                    </div>
+                <div class="movie-description mb-4">
+                    <h5><i class="fas fa-info-circle me-2"></i>Opis filmu</h5>
+                    <p class="text-muted">@Model.Movie.Description</p>
                 </div>
             </div>
         </div>
     </div>
-}
 
+    <!-- Sekcja seansów -->
+    <div class="mt-5">
+        <h3><i class="fas fa-calendar-alt me-2"></i>Dostępne seanse</h3>
+        
+        @if (Model.Movie.Screenings.Any())
+        {
+            <!-- Grupowanie seansów według dat -->
+            
+                var screeningsByDate = Model.Movie.Screenings
+                    .Where(s => s.StartTime > DateTime.Now)
+                    .GroupBy(s => s.StartTime.Date)
+                    .OrderBy(g => g.Key);
+            
+
+            @foreach (var dateGroup in screeningsByDate)
+            {
+                <div class="screening-date-group mb-4">
+                    <h5 class="bg-light p-3 rounded">
+                        <i class="fas fa-calendar me-2"></i>
+                        @dateGroup.Key.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"))
+                    </h5>
+                    
+                    <div class="row">
+                        @foreach (var screening in dateGroup.OrderBy(s => s.StartTime))
+                        {
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card screening-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="card-title mb-0">
+                                                <i class="fas fa-clock me-1"></i>
+                                                @screening.StartTime.ToString("HH:mm") - @screening.EndTime.ToString("HH:mm")
+                                            </h6>
+                                            <span class="badge bg-primary">@screening.TicketPrice.ToString("C")</span>
+                                        </div>
+                                        
+                                        <p class="card-text mb-2">
+                                            <i class="fas fa-couch me-1"></i>
+                                            <strong>Sala:</strong> @screening.Hall.HallName
+                                        </p>
+                                        
+                                        <p class="card-text mb-2">
+                                            <i class="fas fa-crown me-1"></i>
+                                            <strong>Typ:</strong> 
+                                            <span class="badge bg-secondary">@screening.Hall.HallType</span>
+                                        </p>
+                                        
+                                        <p class="card-text mb-3">
+                                            <i class="fas fa-users me-1"></i>
+                                            <strong>Dostępne miejsca:</strong>
+                                            <span class="@(screening.AvailableSeats < 10 ? "text-danger" : "text-success")">
+                                                @screening.AvailableSeats / @screening.Hall.Capacity
+                                            </span>
+                                        </p>
+                                        
+                                        @if (screening.AvailableSeats > 0)
+                                        {
+                                            @if (screening.StartTime > DateTime.Now.AddMinutes(30))
+                                            {
+                                                <a asp-page="/Bookings/Create" asp-route-screeningId="@screening.ScreeningId" 
+                                                   class="btn btn-success w-100">
+                                                    <i class="fas fa-ticket-alt me-1"></i>Kup bilet
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-secondary w-100" disabled>
+                                                    <i class="fas fa-clock me-1"></i>Za późno na rezerwację
+                                                </button>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-danger w-100" disabled>
+                                                <i class="fas fa-times me-1"></i>Wyprzedane
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Brak dostępnych seansów</strong><br>
+                Obecnie nie ma zaplanowanych seansów dla tego filmu.
+            </div>
+        }
+    </div>
+
+    <!-- Przycisk powrotu -->
+    <div class="mt-4">
+        <a asp-page="/Movies/Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Powrót do listy filmów
+        </a>
+    </div>
+}
