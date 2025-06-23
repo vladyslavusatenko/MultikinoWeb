@@ -1,30 +1,40 @@
-﻿// Movies/Details.cshtml.cs - POPRAWIONA WERSJA
+﻿// Pages/Movies/Details.cshtml.cs
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using MultikinoWeb.Data;
 using MultikinoWeb.Models;
-using MultikinoWeb.Services;
 
 namespace MultikinoWeb.Pages.Movies
 {
-    public class MovieDetailsModel : PageModel
+    public class DetailsModel : PageModel
     {
-        private readonly IMovieService _movieService;
+        private readonly MultikinoDbContext _context;
 
-        public MovieDetailsModel(IMovieService movieService)
+        public DetailsModel(MultikinoDbContext context)
         {
-            _movieService = movieService;
+            _context = context;
         }
 
         public Movie? Movie { get; set; }
+        public List<Screening> Screenings { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            Movie = await _movieService.GetMovieByIdAsync(id);
+            Movie = await _context.Movies
+                .FirstOrDefaultAsync(m => m.MovieId == id && m.IsActive);
 
             if (Movie == null)
             {
                 return NotFound();
             }
+
+            // Pobierz seanse dla tego filmu (tylko przyszłe)
+            Screenings = await _context.Screenings
+                .Include(s => s.Hall)
+                .Where(s => s.MovieId == id && s.StartTime > DateTime.Now)
+                .OrderBy(s => s.StartTime)
+                .ToListAsync();
 
             return Page();
         }

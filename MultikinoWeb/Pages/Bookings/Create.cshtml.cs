@@ -24,6 +24,9 @@ namespace MultikinoWeb.Pages.Bookings
 
         public Screening? Screening { get; set; }
 
+        // NOWA WŁAŚCIWOŚĆ - Lista zajętych miejsc
+        public List<string> OccupiedSeats { get; set; } = new();
+
         public async Task<IActionResult> OnGetAsync(int screeningId)
         {
             // WYCZYŚĆ EWENTUALNE STARE DANE Z SESJI
@@ -46,6 +49,9 @@ namespace MultikinoWeb.Pages.Bookings
                 return RedirectToPage("/Movies/Details", new { id = Screening.MovieId });
             }
 
+            // POBIERZ RZECZYWISTE ZAJĘTE MIEJSCA Z BAZY DANYCH
+            OccupiedSeats = await _bookingService.GetOccupiedSeatsAsync(screeningId);
+
             BookingData.ScreeningId = screeningId;
             BookingData.TicketPrice = Screening.TicketPrice;
             BookingData.NumberOfTickets = 1;
@@ -55,7 +61,7 @@ namespace MultikinoWeb.Pages.Bookings
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // Pobierz ponownie screening
+            // Pobierz ponownie screening i zajęte miejsca
             Screening = await _context.Screenings
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
@@ -65,6 +71,9 @@ namespace MultikinoWeb.Pages.Bookings
             {
                 return NotFound();
             }
+
+            // Pobierz zajęte miejsca
+            OccupiedSeats = await _bookingService.GetOccupiedSeatsAsync(BookingData.ScreeningId);
 
             // Sprawdź czy użytkownik jest zalogowany
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -86,6 +95,16 @@ namespace MultikinoWeb.Pages.Bookings
                 return Page();
             }
 
+            // Sprawdź czy wybrane miejsca nie są już zajęte
+            var selectedSeats = BookingData.SelectedSeats.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var conflictingSeats = selectedSeats.Intersect(OccupiedSeats).ToList();
+
+            if (conflictingSeats.Any())
+            {
+                ModelState.AddModelError("", $"Wybrane miejsca są już zajęte: {string.Join(", ", conflictingSeats)}");
+                return Page();
+            }
+
             var result = await _bookingService.CreateBookingAsync(BookingData, userId.Value);
 
             if (result)
@@ -94,8 +113,15 @@ namespace MultikinoWeb.Pages.Bookings
                 return RedirectToPage("/Bookings/MyBookings");
             }
 
-            ModelState.AddModelError("", "Wystąpił błąd podczas tworzenia rezerwacji.");
+            ModelState.AddModelError("", "Wystąpił błąd podczas tworzenia rezerwacji. Wybrane miejsca mogą być już zajęte.");
             return Page();
+        }
+
+        // NOWA METODA API - Pobieranie zajętych miejsc przez AJAX
+        public async Task<IActionResult> OnGetOccupiedSeatsAsync(int screeningId)
+        {
+            var occupiedSeats = await _bookingService.GetOccupiedSeatsAsync(screeningId);
+            return new JsonResult(occupiedSeats);
         }
     }
 }

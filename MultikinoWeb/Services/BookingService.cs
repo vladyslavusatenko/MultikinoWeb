@@ -14,6 +14,18 @@ namespace MultikinoWeb.Services
             _context = context;
         }
 
+        // NOWA METODA - Pobieranie zajętych miejsc dla danego seansu
+        public async Task<List<string>> GetOccupiedSeatsAsync(int screeningId)
+        {
+            var occupiedSeats = await _context.Tickets
+                .Where(t => t.Booking.ScreeningId == screeningId &&
+                           t.Booking.Status == "Confirmed")
+                .Select(t => t.SeatNumber)
+                .ToListAsync();
+
+            return occupiedSeats;
+        }
+
         public async Task<bool> CreateBookingAsync(BookingViewModel model, int userId)
         {
             var screening = await _context.Screenings
@@ -29,8 +41,18 @@ namespace MultikinoWeb.Services
                 return false;
 
             // SPRAWDŹ CZY SEANS JESZCZE SIĘ NIE ROZPOCZĄŁ
-            if (screening.StartTime <= DateTime.Now)
+            if (screening.StartTime <= DateTime.Now.AddMinutes(30))
                 return false;
+
+            // SPRAWDŹ CZY WYBRANE MIEJSCA NIE SĄ JUŻ ZAJĘTE
+            var selectedSeats = model.SelectedSeats.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var occupiedSeats = await GetOccupiedSeatsAsync(model.ScreeningId);
+
+            var conflictingSeats = selectedSeats.Intersect(occupiedSeats).ToList();
+            if (conflictingSeats.Any())
+            {
+                return false; // Wybrane miejsca są już zajęte
+            }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -41,7 +63,7 @@ namespace MultikinoWeb.Services
                     ScreeningId = model.ScreeningId,
                     BookingDate = DateTime.Now,
                     NumberOfTickets = model.NumberOfTickets,
-                    TotalAmount = model.NumberOfTickets * screening.TicketPrice, // Użyj ceny z bazy
+                    TotalAmount = model.NumberOfTickets * screening.TicketPrice,
                     Status = "Confirmed",
                     PaymentMethod = model.PaymentMethod
                 };
@@ -50,8 +72,6 @@ namespace MultikinoWeb.Services
                 await _context.SaveChangesAsync();
 
                 // UTWÓRZ BILETY Z WYBRANYMI MIEJSCAMI
-                var selectedSeats = model.SelectedSeats.Split(',', StringSplitOptions.RemoveEmptyEntries);
-
                 for (int i = 0; i < model.NumberOfTickets; i++)
                 {
                     var seatNumber = i < selectedSeats.Length ? selectedSeats[i] : $"AUTO{i + 1}";
@@ -87,6 +107,7 @@ namespace MultikinoWeb.Services
                 .ThenInclude(s => s.Movie)
                 .Include(b => b.Screening)
                 .ThenInclude(s => s.Hall)
+                .Include(b => b.Tickets) // Dodaj bilety do ładowania
                 .Where(b => b.UserId == userId)
                 .OrderByDescending(b => b.BookingDate)
                 .ToListAsync();
@@ -108,6 +129,7 @@ namespace MultikinoWeb.Services
         {
             var booking = await _context.Bookings
                 .Include(b => b.Screening)
+                .Include(b => b.Tickets)
                 .FirstOrDefaultAsync(b => b.BookingId == id && b.UserId == userId);
 
             if (booking == null || booking.Status == "Cancelled")
@@ -120,10 +142,30 @@ namespace MultikinoWeb.Services
                 return false; // Za późno na anulowanie
             }
 
-            booking.Status = "Cancelled";
-            booking.Screening.AvailableSeats += booking.NumberOfTickets;
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // ZMIEŃ STATUS REZERWACJI
+                booking.Status = "Cancelled";
 
-            return await _context.SaveChangesAsync() > 0;
+                // ZWIĘKSZ DOSTĘPNE MIEJSCA
+                booking.Screening.AvailableSeats += booking.NumberOfTickets;
+
+                // OZNACZ BILETY JAKO ANULOWANE (opcjonalnie)
+                foreach (var ticket in booking.Tickets)
+                {
+                    ticket.IsUsed = true; // Można dodać pole IsCancelled zamiast używać IsUsed
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
         }
 
         public async Task<IEnumerable<Booking>> GetAllBookingsAsync()
@@ -132,6 +174,7 @@ namespace MultikinoWeb.Services
                 .Include(b => b.User)
                 .Include(b => b.Screening)
                 .ThenInclude(s => s.Movie)
+                .Include(b => b.Tickets)
                 .OrderByDescending(b => b.BookingDate)
                 .ToListAsync();
         }
@@ -148,7 +191,5 @@ namespace MultikinoWeb.Services
 
             return await query.SumAsync(b => b.TotalAmount);
         }
-
     }
-
 }

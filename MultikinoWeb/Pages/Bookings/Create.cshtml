@@ -34,7 +34,7 @@ else
                                 </p>
                                 <p class="mb-0">
                                     <i class="fas fa-users me-1"></i><strong>Dostępne miejsca:</strong>
-                                    <span class="@(Model.Screening.AvailableSeats < 10 ? "text-danger" : "text-success")">
+                                    <span class="@(Model.Screening.AvailableSeats < 10 ? "text-danger" : "text-success")" id="availableSeatsDisplay">
                                         @Model.Screening.AvailableSeats / @Model.Screening.Hall.Capacity
                                     </span>
                                 </p>
@@ -85,7 +85,6 @@ else
                                     @{
                                         var rows = 10; // Ilość rzędów
                                         var seatsPerRow = 12; // Miejsc w rzędzie
-                                        var occupiedSeats = new[] { "A1", "A2", "B5", "C8", "D10", "E3", "E4", "F1", "G7", "H12" }; // Przykładowe zajęte miejsca
                                     }
 
                                     @for (int row = 1; row <= rows; row++)
@@ -95,7 +94,7 @@ else
                                             @for (int seat = 1; seat <= seatsPerRow; seat++)
                                             {
                                                 var seatId = $"{(char)('A' + row - 1)}{seat}";
-                                                var isOccupied = occupiedSeats.Contains(seatId);
+                                                var isOccupied = Model.OccupiedSeats.Contains(seatId);
 
                                                 <div class="seat @(isOccupied ? "occupied" : "available")"
                                                      data-seat="@seatId"
@@ -297,10 +296,20 @@ else
         let selectedSeats = [];
         const maxSeats = 10;
         const ticketPrice = @Model.Screening.TicketPrice;
+        const screeningId = @Model.Screening.ScreeningId;
+
+        // POBIERZ ZAJĘTE MIEJSCA Z SERWERA
+        const occupiedSeats = @Html.Raw(Json.Serialize(Model.OccupiedSeats));
 
         // Funkcja przełączania miejsc
         function toggleSeat(seatElement) {
             const seatId = seatElement.getAttribute('data-seat');
+
+            // Sprawdź czy miejsce nie jest zajęte
+            if (occupiedSeats.includes(seatId)) {
+                showAlert('To miejsce jest już zajęte!', 'warning');
+                return;
+            }
 
             if (seatElement.classList.contains('selected')) {
                 // Usuń zaznaczenie
@@ -413,6 +422,39 @@ else
             }, 5000);
         }
 
+        // Funkcja odświeżania zajętych miejsc
+        async function refreshOccupiedSeats() {
+            try {
+                const response = await fetch(`?handler=OccupiedSeats&screeningId=${screeningId}`);
+                const updatedOccupiedSeats = await response.json();
+
+                // Zaktualizuj mapę miejsc
+                document.querySelectorAll('.seat').forEach(seat => {
+                    const seatId = seat.getAttribute('data-seat');
+
+                    if (updatedOccupiedSeats.includes(seatId)) {
+                        // Miejsce zostało zajęte
+                        if (!seat.classList.contains('occupied')) {
+                            seat.classList.remove('available', 'selected');
+                            seat.classList.add('occupied');
+                            seat.onclick = null;
+
+                            // Usuń z wybranych miejsc jeśli było wybrane
+                            if (selectedSeats.includes(seatId)) {
+                                selectedSeats = selectedSeats.filter(id => id !== seatId);
+                                updateSelectedSeats();
+                                updateSummary();
+                                updateSubmitButton();
+                                showAlert(`Miejsce ${seatId} zostało właśnie zarezerwowane przez inną osobę.`, 'warning');
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Błąd podczas odświeżania miejsc:', error);
+            }
+        }
+
         // Inicjalizacja po załadowaniu strony
         document.addEventListener('DOMContentLoaded', function() {
             // Nasłuchuj zmian w checkbox regulaminu
@@ -431,6 +473,9 @@ else
             updateSummary();
             updateSubmitButton();
 
+            // Odświeżaj zajęte miejsca co 30 sekund
+            setInterval(refreshOccupiedSeats, 30000);
+
             // Dodaj efekt hover do miejsc dostępnych
             const availableSeats = document.querySelectorAll('.seat.available');
             availableSeats.forEach(seat => {
@@ -447,6 +492,8 @@ else
                     }
                 });
             });
+
+            console.log('Zajęte miejsca:', occupiedSeats);
         });
     </script>
 }

@@ -11,5 +11,8 @@ namespace MultikinoWeb.Services
         Task<bool> CancelBookingAsync(int id, int userId);
         Task<IEnumerable<Booking>> GetAllBookingsAsync();
         Task<decimal> GetTotalRevenueAsync(DateTime? startDate = null, DateTime? endDate = null);
+
+        // NOWA METODA - Pobieranie zajętych miejsc
+        Task<List<string>> GetOccupiedSeatsAsync(int screeningId);
     }
 }

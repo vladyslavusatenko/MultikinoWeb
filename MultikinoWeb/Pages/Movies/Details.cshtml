@@ -1,5 +1,6 @@
-﻿@page "{id:int}"
-@model MovieDetailsModel
+﻿@* Pages/Movies/Details.cshtml *@
+@page "{id:int}"
+@model DetailsModel
 @{
     ViewData["Title"] = Model.Movie?.Title ?? "Szczegóły filmu";
 }
@@ -8,167 +9,230 @@
 {
     <div class="alert alert-danger">
         <h4>Film nie został znaleziony</h4>
-        <p>Przepraszamy, ale film o podanym ID nie istnieje.</p>
-        <a asp-page="/Movies/Index" class="btn btn-primary">Powrót do filmów</a>
+        <p>Przepraszamy, ale film o podanym ID nie istnieje lub został usunięty.</p>
+        <a asp-page="/Movies/Index" class="btn btn-primary">Powrót do listy filmów</a>
     </div>
 }
 else
 {
     <div class="row">
-        <div class="col-md-4">
-            @if (Model.Movie.Poster != null)
-            {
-                <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Movie.Poster)"
-                     class="img-fluid rounded shadow" alt="@Model.Movie.Title" style="width: 100%;">
-            }
-            else
-            {
-                <div class="poster-placeholder bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
-                    <i class="fas fa-film fa-5x text-muted"></i>
-                </div>
-            }
+        <!-- Plakat filmu -->
+        <div class="col-lg-4 mb-4">
+            <div class="movie-poster text-center">
+                @if (Model.Movie.Poster != null)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Movie.Poster)"
+                         class="img-fluid rounded shadow-lg" alt="@Model.Movie.Title" style="max-height: 600px;">
+                }
+                else
+                {
+                    <div class="placeholder-poster bg-light d-flex align-items-center justify-content-center rounded shadow-lg" style="height: 600px;">
+                        <i class="fas fa-film fa-5x text-muted"></i>
+                    </div>
+                }
+            </div>
         </div>
-        
-        <div class="col-md-8">
-            <div class="movie-details">
-                <h1 class="mb-3">@Model.Movie.Title</h1>
-                
-                <div class="movie-info mb-4">
+
+        <!-- Informacje o filmie -->
+        <div class="col-lg-8">
+            <div class="movie-info">
+                <h1 class="display-4 mb-3">@Model.Movie.Title</h1>
+
+                <div class="movie-details mb-4">
                     <div class="row">
                         <div class="col-md-6">
                             <p class="mb-2">
-                                <i class="fas fa-user-tie me-2"></i>
+                                <i class="fas fa-user-tie me-2 text-primary"></i>
                                 <strong>Reżyser:</strong> @Model.Movie.Director
                             </p>
                             <p class="mb-2">
-                                <i class="fas fa-tags me-2"></i>
+                                <i class="fas fa-tags me-2 text-primary"></i>
                                 <strong>Gatunek:</strong> @Model.Movie.Genre
                             </p>
                             <p class="mb-2">
-                                <i class="fas fa-clock me-2"></i>
+                                <i class="fas fa-clock me-2 text-primary"></i>
                                 <strong>Czas trwania:</strong> @Model.Movie.Duration min
                             </p>
                         </div>
                         <div class="col-md-6">
                             <p class="mb-2">
-                                <i class="fas fa-calendar me-2"></i>
+                                <i class="fas fa-calendar me-2 text-primary"></i>
                                 <strong>Premiera:</strong> @Model.Movie.ReleaseDate.ToString("dd.MM.yyyy")
                             </p>
                             <p class="mb-2">
-                                <i class="fas fa-star text-warning me-2"></i>
+                                <i class="fas fa-star me-2 text-warning"></i>
                                 <strong>Ocena:</strong> @Model.Movie.Rating/10
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>
+                                <strong>Status:</strong>
+                                <span class="badge bg-success">Dostępny</span>
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <div class="movie-description mb-4">
-                    <h5><i class="fas fa-info-circle me-2"></i>Opis filmu</h5>
-                    <p class="text-muted">@Model.Movie.Description</p>
+                    <h5><i class="fas fa-align-left me-2"></i>Opis filmu</h5>
+                    <p class="lead">@Model.Movie.Description</p>
+                </div>
+
+                <!-- Seanse -->
+                <div class="screenings-section">
+                    <h5><i class="fas fa-ticket-alt me-2"></i>Dostępne seanse</h5>
+
+                    @if (Model.Screenings.Any())
+                    {
+                        <div class="row">
+                            @foreach (var screening in Model.Screenings)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card screening-card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-couch me-1"></i>@screening.Hall.HallName
+                                                <span class="badge bg-secondary ms-2">@screening.Hall.HallType</span>
+                                            </h6>
+
+                                            <div class="screening-details mb-3">
+                                                <p class="card-text mb-1">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    <strong>@screening.StartTime.ToString("dddd, dd.MM.yyyy", new System.Globalization.CultureInfo("pl-PL"))</strong>
+                                                </p>
+                                                <p class="card-text mb-1">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    @screening.StartTime.ToString("HH:mm") - @screening.EndTime.ToString("HH:mm")
+                                                </p>
+                                                <p class="card-text mb-1">
+                                                    <i class="fas fa-users me-1"></i>
+                                                    Dostępne miejsca:
+                                                    <span class="@(screening.AvailableSeats < 10 ? "text-danger" : "text-success")">
+                                                        @screening.AvailableSeats / @screening.Hall.Capacity
+                                                    </span>
+                                                </p>
+                                                <p class="card-text mb-0">
+                                                    <i class="fas fa-coins me-1"></i>
+                                                    <strong class="text-success">@screening.TicketPrice.ToString("C")</strong>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-footer">
+                                            @if (screening.AvailableSeats > 0 && screening.StartTime > DateTime.Now.AddMinutes(30))
+                                            {
+                                                <a asp-page="/Bookings/Create" asp-route-screeningId="@screening.ScreeningId"
+                                                   class="btn btn-primary btn-sm w-100">
+                                                    <i class="fas fa-shopping-cart me-1"></i>Zarezerwuj bilety
+                                                </a>
+                                            }
+                                            else if (screening.AvailableSeats == 0)
+                                            {
+                                                <button class="btn btn-danger btn-sm w-100" disabled>
+                                                    <i class="fas fa-times me-1"></i>Wyprzedane
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-secondary btn-sm w-100" disabled>
+                                                    <i class="fas fa-clock me-1"></i>Rezerwacja niedostępna
+                                                </button>
+                                                <small class="text-muted">Rezerwacja możliwa do 30 min przed seansem</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Brak dostępnych seansów</strong>
+                            <p class="mb-0">Obecnie nie ma zaplanowanych seansów dla tego filmu. Sprawdź ponownie wkrótce!</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Przyciski akcji -->
+                <div class="action-buttons mt-4">
+                    <a asp-page="/Movies/Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Powrót do listy filmów
+                    </a>
+
+                    @if (Model.Screenings.Any(s => s.AvailableSeats > 0 && s.StartTime > DateTime.Now.AddMinutes(30)))
+                    {
+                        <button class="btn btn-success ms-2" onclick="scrollToScreenings()">
+                            <i class="fas fa-ticket-alt me-1"></i>Zobacz dostępne seanse
+                        </button>
+                    }
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Sekcja seansów -->
-    <div class="mt-5">
-        <h3><i class="fas fa-calendar-alt me-2"></i>Dostępne seanse</h3>
-        
-        @if (Model.Movie.Screenings.Any())
-        {
-            <!-- Grupowanie seansów według dat -->
-            
-                var screeningsByDate = Model.Movie.Screenings
-                    .Where(s => s.StartTime > DateTime.Now)
-                    .GroupBy(s => s.StartTime.Date)
-                    .OrderBy(g => g.Key);
-            
-
-            @foreach (var dateGroup in screeningsByDate)
-            {
-                <div class="screening-date-group mb-4">
-                    <h5 class="bg-light p-3 rounded">
-                        <i class="fas fa-calendar me-2"></i>
-                        @dateGroup.Key.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("pl-PL"))
-                    </h5>
-                    
+    <!-- Dodatkowe informacje -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Informacje dodatkowe</h5>
+                </div>
+                <div class="card-body">
                     <div class="row">
-                        @foreach (var screening in dateGroup.OrderBy(s => s.StartTime))
-                        {
-                            <div class="col-md-6 col-lg-4 mb-3">
-                                <div class="card screening-card h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h6 class="card-title mb-0">
-                                                <i class="fas fa-clock me-1"></i>
-                                                @screening.StartTime.ToString("HH:mm") - @screening.EndTime.ToString("HH:mm")
-                                            </h6>
-                                            <span class="badge bg-primary">@screening.TicketPrice.ToString("C")</span>
-                                        </div>
-                                        
-                                        <p class="card-text mb-2">
-                                            <i class="fas fa-couch me-1"></i>
-                                            <strong>Sala:</strong> @screening.Hall.HallName
-                                        </p>
-                                        
-                                        <p class="card-text mb-2">
-                                            <i class="fas fa-crown me-1"></i>
-                                            <strong>Typ:</strong> 
-                                            <span class="badge bg-secondary">@screening.Hall.HallType</span>
-                                        </p>
-                                        
-                                        <p class="card-text mb-3">
-                                            <i class="fas fa-users me-1"></i>
-                                            <strong>Dostępne miejsca:</strong>
-                                            <span class="@(screening.AvailableSeats < 10 ? "text-danger" : "text-success")">
-                                                @screening.AvailableSeats / @screening.Hall.Capacity
-                                            </span>
-                                        </p>
-                                        
-                                        @if (screening.AvailableSeats > 0)
-                                        {
-                                            @if (screening.StartTime > DateTime.Now.AddMinutes(30))
-                                            {
-                                                <a asp-page="/Bookings/Create" asp-route-screeningId="@screening.ScreeningId" 
-                                                   class="btn btn-success w-100">
-                                                    <i class="fas fa-ticket-alt me-1"></i>Kup bilet
-                                                </a>
-                                            }
-                                            else
-                                            {
-                                                <button class="btn btn-secondary w-100" disabled>
-                                                    <i class="fas fa-clock me-1"></i>Za późno na rezerwację
-                                                </button>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <button class="btn btn-danger w-100" disabled>
-                                                <i class="fas fa-times me-1"></i>Wyprzedane
-                                            </button>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        }
+                        <div class="col-md-4">
+                            <h6>Zasady kinowe</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-1"></i> Punktualność - wejście do 15 min po rozpoczęciu</li>
+                                <li><i class="fas fa-check text-success me-1"></i> Cisza podczas seansu</li>
+                                <li><i class="fas fa-check text-success me-1"></i> Zakaz nagrywania</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Dostępność</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-wheelchair text-primary me-1"></i> Dostęp dla osób niepełnosprawnych</li>
+                                <li><i class="fas fa-volume-up text-primary me-1"></i> Audiodeskrypcja dostępna</li>
+                                <li><i class="fas fa-deaf text-primary me-1"></i> Napisy dla niesłyszących</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Udogodnienia</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fa-solid fa-popcorn text-warning me-1"></i> Bar ze przekąskami</li>
+                                <li><i class="fas fa-coffee text-warning me-1"></i> Automaty z napojami</li>
+                                <li><i class="fas fa-parking text-warning me-1"></i> Bezpłatny parking</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            }
-        }
-        else
-        {
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Brak dostępnych seansów</strong><br>
-                Obecnie nie ma zaplanowanych seansów dla tego filmu.
             </div>
-        }
+        </div>
     </div>
+}
 
-    <!-- Przycisk powrotu -->
-    <div class="mt-4">
-        <a asp-page="/Movies/Index" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Powrót do listy filmów
-        </a>
-    </div>
+@section Scripts {
+    <script>
+        function scrollToScreenings() {
+            document.querySelector('.screenings-section').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        // Animacja kart seansów
+        document.addEventListener('DOMContentLoaded', function() {
+            const screeningCards = document.querySelectorAll('.screening-card');
+
+            screeningCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
 }
