@@ -18,6 +18,7 @@ builder.Services.AddDbContext<MultikinoDbContext>(options =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 // Dodanie Razor Pages
 builder.Services.AddRazorPages();

@@ -1,0 +1,206 @@
+﻿@page
+@model AdminIndexModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Panel Administratora";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt me-2"></i>Panel Administratora</h2>
+    <div class="btn-group">
+        <a asp-page="/Admin/Movies/Index" class="btn btn-primary">
+            <i class="fas fa-film me-1"></i>Filmy
+        </a>
+        <a asp-page="/Admin/Screenings/Index" class="btn btn-success">
+            <i class="fas fa-calendar me-1"></i>Seanse
+        </a>
+        <a asp-page="/Admin/Reports/Index" class="btn btn-info">
+            <i class="fas fa-chart-bar me-1"></i>Raporty
+        </a>
+    </div>
+</div>
+
+<!-- Statystyki -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>@Model.Dashboard.TotalMovies</h3>
+                        <p class="mb-0">Aktywne filmy</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-film fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>@Model.Dashboard.TotalHalls</h3>
+                        <p class="mb-0">Sale kinowe</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-couch fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>@Model.Dashboard.TotalUsers</h3>
+                        <p class="mb-0">Użytkownicy</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>@Model.Dashboard.TodayBookings</h3>
+                        <p class="mb-0">Dzisiejsze rezerwacje</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-ticket-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Przychody -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-money-bill-wave me-2"></i>Dzisiejsze przychody</h5>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="text-success">@Model.Dashboard.TodayRevenue.ToString("C")</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-calendar-alt me-2"></i>Ten miesiąc</h5>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="text-primary">@Model.Dashboard.ThisMonthRevenue.ToString("C")</h2>
+                @if (Model.Dashboard.RevenueGrowth != 0)
+                {
+                        <small class="@(Model.Dashboard.RevenueGrowth > 0 ? "text-success" : "text-danger")">
+                            <i class="fas fa-arrow-@(Model.Dashboard.RevenueGrowth > 0 ? "up" : "down") me-1"></i>
+                        @Math.Abs(Model.Dashboard.RevenueGrowth).ToString("F1")% vs poprzedni miesiąc
+                        </small>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-clock me-2"></i>Ostatni miesiąc</h5>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="text-info">@Model.Dashboard.LastMonthRevenue.ToString("C")</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ostatnie rezerwacje i popularne filmy -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list me-2"></i>Ostatnie rezerwacje</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Dashboard.RecentBookings.Any())
+                {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Film</th>
+                                        <th>Użytkownik</th>
+                                        <th>Data</th>
+                                        <th>Kwota</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var booking in Model.Dashboard.RecentBookings)
+                                {
+                                            <tr>
+                                                <td>#@booking.BookingId</td>
+                                                <td>@booking.Screening.Movie.Title</td>
+                                                <td>@booking.User.FirstName @booking.User.LastName</td>
+                                                <td>@booking.BookingDate.ToString("dd.MM HH:mm")</td>
+                                                <td>@booking.TotalAmount.ToString("C")</td>
+                                                <td>
+                                                    <span class="badge bg-@(booking.Status == "Confirmed" ? "success" : booking.Status == "Cancelled" ? "danger" : "warning")">
+                                                @booking.Status
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                }
+                else
+                {
+                        <p class="text-muted">Brak ostatnich rezerwacji</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-star me-2"></i>Popularne filmy</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Dashboard.PopularMovies.Any())
+                {
+                    @foreach (var movie in Model.Dashboard.PopularMovies)
+                    {
+                                <div class="mb-3">
+                                    <h6 class="mb-1">@movie.Movie.Title</h6>
+                                    <small class="text-muted">
+                                @movie.TotalBookings rezerwacji • @movie.TotalRevenue.ToString("C")
+                                    </small>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar bg-success" style="width: @((movie.TotalRevenue / Model.Dashboard.PopularMovies.Max(m => m.TotalRevenue)) * 100)%"></div>
+                                    </div>
+                                </div>
+                    }
+                }
+                else
+                {
+                        <p class="text-muted">Brak danych</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

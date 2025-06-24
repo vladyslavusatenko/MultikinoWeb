@@ -1,0 +1,145 @@
+﻿@page
+@model AdminScreeningsIndexModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Zarządzanie seansami";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-calendar me-2"></i>Zarządzanie seansami</h2>
+    <a asp-page="/Admin/Screenings/Create" class="btn btn-success">
+        <i class="fas fa-plus me-1"></i>Dodaj nowy seans
+    </a>
+</div>
+
+<!-- Filtry -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <select asp-for="MovieFilter" class="form-select">
+                    <option value="">Wszystkie filmy</option>
+                    @foreach (var movie in Model.Movies)
+                    {
+                        <option value="@movie.MovieId">@movie.Title</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select asp-for="HallFilter" class="form-select">
+                    <option value="">Wszystkie sale</option>
+                    @foreach (var hall in Model.Halls)
+                    {
+                        <option value="@hall.HallId">@hall.HallName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input asp-for="DateFilter" class="form-control" type="date" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Filtruj
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista seansów -->
+<div class="card">
+    <div class="card-body">
+        @if (Model.Screenings.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Film</th>
+                            <th>Sala</th>
+                            <th>Data i godzina</th>
+                            <th>Czas zakończenia</th>
+                            <th>Cena biletu</th>
+                            <th>Dostępne miejsca</th>
+                            <th>Sprzedane</th>
+                            <th>Przychód</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var screening in Model.Screenings)
+                        {
+                            var soldTickets = screening.Hall.Capacity - screening.AvailableSeats;
+                            var revenue = soldTickets * screening.TicketPrice;
+                            var utilization = (decimal)soldTickets / screening.Hall.Capacity * 100;
+
+                            <tr class="@(screening.StartTime < DateTime.Now ? "table-secondary" : "")">
+                                <td>
+                                    <strong>@screening.Movie.Title</strong>
+                                    <br>
+                                    <small class="text-muted">@screening.Movie.Duration min</small>
+                                </td>
+                                <td>
+                                    @screening.Hall.HallName
+                                    <br>
+                                    <small class="text-muted">@screening.Hall.HallType</small>
+                                </td>
+                                <td>
+                                    @screening.StartTime.ToString("dd.MM.yyyy")
+                                    <br>
+                                    <strong>@screening.StartTime.ToString("HH:mm")</strong>
+                                </td>
+                                <td>@screening.EndTime.ToString("HH:mm")</td>
+                                <td>
+                                    <span class="badge bg-success">@screening.TicketPrice.ToString("C")</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-@(screening.AvailableSeats > 10 ? "info" : screening.AvailableSeats > 0 ? "warning" : "danger")">
+                                        @screening.AvailableSeats / @screening.Hall.Capacity
+                                    </span>
+                                </td>
+                                <td>
+                                    @soldTickets biletów
+                                    <br>
+                                    <small class="text-muted">@utilization.ToString("F1")% wypełnienia</small>
+                                </td>
+                                <td>
+                                    <strong class="text-success">@revenue.ToString("C")</strong>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-page="/Admin/Screenings/Edit" asp-route-id="@screening.ScreeningId"
+                                           class="btn btn-outline-primary" title="Edytuj">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @if (screening.StartTime > DateTime.Now)
+                                        {
+                                            <form method="post" asp-page-handler="Delete" asp-route-id="@screening.ScreeningId"
+                                                  class="d-inline" onsubmit="return confirm('Czy na pewno chcesz usunąć ten seans?')">
+                                                <button type="submit" class="btn btn-outline-danger" title="Usuń">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Brak seansów</h4>
+                <p class="text-muted">Nie znaleziono seansów spełniających kryteria wyszukiwania.</p>
+                <a asp-page="/Admin/Screenings/Create" class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i>Dodaj pierwszy seans
+                </a>
+            </div>
+        }
+    </div>
+</div>

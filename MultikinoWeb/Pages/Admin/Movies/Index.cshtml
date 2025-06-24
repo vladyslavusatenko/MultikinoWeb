@@ -1,0 +1,159 @@
+﻿@page
+@model AdminMoviesIndexModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Zarządzanie filmami";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-film me-2"></i>Zarządzanie filmami</h2>
+    <a asp-page="/Admin/Movies/Create" class="btn btn-success">
+        <i class="fas fa-plus me-1"></i>Dodaj nowy film
+    </a>
+</div>
+
+<!-- Filtry -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input asp-for="SearchTerm" class="form-control" placeholder="Szukaj filmu..." />
+            </div>
+            <div class="col-md-3">
+                <select asp-for="GenreFilter" class="form-select">
+                    <option value="">Wszystkie gatunki</option>
+                    <option value="Akcja">Akcja</option>
+                    <option value="Komedia">Komedia</option>
+                    <option value="Dramat">Dramat</option>
+                    <option value="Horror">Horror</option>
+                    <option value="Sci-Fi">Sci-Fi</option>
+                    <option value="Thriller">Thriller</option>
+                    <option value="Animacja">Animacja</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select asp-for="StatusFilter" class="form-select">
+                    <option value="">Wszystkie statusy</option>
+                    <option value="true">Aktywne</option>
+                    <option value="false">Nieaktywne</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Szukaj
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista filmów -->
+<div class="card">
+    <div class="card-body">
+        @if (Model.Movies.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Poster</th>
+                            <th>Tytuł</th>
+                            <th>Reżyser</th>
+                            <th>Gatunek</th>
+                            <th>Czas trwania</th>
+                            <th>Ocena</th>
+                            <th>Status</th>
+                            <th>Seanse</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var movie in Model.Movies)
+                        {
+                            <tr>
+                                <td>
+                                    @if (movie.Poster != null)
+                                    {
+                                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(movie.Poster)"
+                                             alt="@movie.Title" style="width: 40px; height: 60px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 60px;">
+                                            <i class="fas fa-film text-muted"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <strong>@movie.Title</strong>
+                                    <br>
+                                    <small class="text-muted">@movie.ReleaseDate.ToString("yyyy")</small>
+                                </td>
+                                <td>@movie.Director</td>
+                                <td>
+                                    <span class="badge bg-secondary">@movie.Genre</span>
+                                </td>
+                                <td>@movie.Duration min</td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-star me-1"></i>@movie.Rating
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (movie.IsActive)
+                                    {
+                                        <span class="badge bg-success">Aktywny</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Nieaktywny</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@movie.Screenings.Count() seansów</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-page="/Movies/Details" asp-route-id="@movie.MovieId"
+                                           class="btn btn-outline-info" title="Podgląd">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-page="/Admin/Movies/Edit" asp-route-id="@movie.MovieId"
+                                           class="btn btn-outline-primary" title="Edytuj">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" asp-page-handler="ToggleStatus" asp-route-id="@movie.MovieId"
+                                              class="d-inline" onsubmit="return confirm('Czy na pewno chcesz zmienić status tego filmu?')">
+                                            <button type="submit" class="btn btn-outline-@(movie.IsActive ? "warning" : "success")"
+                                                    title="@(movie.IsActive ? "Dezaktywuj" : "Aktywuj")">
+                                                <i class="fas fa-@(movie.IsActive ? "eye-slash" : "eye")"></i>
+                                            </button>
+                                        </form>
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@movie.MovieId"
+                                              class="d-inline" onsubmit="return confirm('Czy na pewno chcesz usunąć ten film? Ta operacja jest nieodwracalna!')">
+                                            <button type="submit" class="btn btn-outline-danger" title="Usuń">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-film fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Brak filmów</h4>
+                <p class="text-muted">Nie znaleziono filmów spełniających kryteria wyszukiwania.</p>
+                <a asp-page="/Admin/Movies/Create" class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i>Dodaj pierwszy film
+                </a>
+            </div>
+        }
+    </div>
+</div>

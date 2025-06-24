@@ -1,0 +1,231 @@
+﻿@page
+@model AdminReportsIndexModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Raporty i statystyki";
+}
+
+<h2><i class="fas fa-chart-bar me-2"></i>Raporty i statystyki</h2>
+
+<!-- Filtry czasowe -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-calendar-alt me-2"></i>Okres raportowania</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Data od:</label>
+                <input asp-for="StartDate" class="form-control" type="date" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Data do:</label>
+                <input asp-for="EndDate" class="form-control" type="date" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Wygeneruj raport
+                </button>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <a href="?StartDate=@DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd")&EndDate=@DateTime.Today.ToString("yyyy-MM-dd")"
+                   class="btn btn-outline-secondary w-100">
+                    Ostatnie 30 dni
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.RevenueReport != null)
+{
+    <!-- Podsumowanie finansowe -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.RevenueReport.TotalRevenue.ToString("C")</h3>
+                    <p class="mb-0">Łączny przychód</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.RevenueReport.TotalBookings</h3>
+                    <p class="mb-0">Liczba rezerwacji</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.RevenueReport.TotalTickets</h3>
+                    <p class="mb-0">Sprzedanych biletów</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.RevenueReport.AverageTicketPrice.ToString("C")</h3>
+                    <p class="mb-0">Średnia cena biletu</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wykresy -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line me-2"></i>Przychody dzienne</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyRevenueChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Przychody według sal</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="hallRevenueChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabele szczegółowe -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-film me-2"></i>Najbardziej dochodowe filmy</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Film</th>
+                                    <th>Przychód</th>
+                                    <th>Bilety</th>
+                                    <th>Rezerwacje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var movie in Model.RevenueReport.RevenueByMovie.Take(10))
+                                {
+                                    <tr>
+                                        <td>@movie.Movie.Title</td>
+                                        <td class="text-success fw-bold">@movie.Revenue.ToString("C")</td>
+                                        <td>@movie.Tickets</td>
+                                        <td>@movie.Bookings</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-couch me-2"></i>Wykorzystanie sal</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.HallUtilization.Any())
+                    {
+                        @foreach (var hall in Model.HallUtilization)
+                        {
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span><strong>@hall.Hall.HallName</strong></span>
+                                    <span>@hall.UtilizationPercentage.ToString("F1")%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: @hall.UtilizationPercentage%"></div>
+                                </div>
+                                <small class="text-muted">
+                                    @hall.BookedSeats / @hall.TotalCapacity miejsc w @hall.TotalScreenings seansach
+                                </small>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @if (Model.RevenueReport != null)
+    {
+        <script>
+            // Wykres przychodów dziennych
+            const dailyCtx = document.getElementById('dailyRevenueChart').getContext('2d');
+            new Chart(dailyCtx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.RevenueReport.DailyRevenue.Select(d => d.Date.ToString("dd.MM")).ToArray())),
+                    datasets: [{
+                        label: 'Przychód dzienny',
+                        data: @Html.Raw(Json.Serialize(Model.RevenueReport.DailyRevenue.Select(d => d.Revenue).ToArray())),
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('pl-PL', {style: 'currency', currency: 'PLN'});
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Wykres przychodów według sal
+            const hallCtx = document.getElementById('hallRevenueChart').getContext('2d');
+            new Chart(hallCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.RevenueReport.RevenueByHall.Select(h => h.Hall.HallName).ToArray())),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.RevenueReport.RevenueByHall.Select(h => h.Revenue).ToArray())),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 205, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        </script>
+    }
+}

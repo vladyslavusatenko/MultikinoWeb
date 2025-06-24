@@ -1,0 +1,393 @@
+﻿@page
+@model AdminScreeningsCreateModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Dodaj nowy seans";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h3><i class="fas fa-plus me-2"></i>Dodaj nowy seans</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" id="screeningForm">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ScreeningData.MovieId" class="form-label">
+                                    <i class="fas fa-film me-1"></i>Wybierz film
+                                </label>
+                                <select asp-for="ScreeningData.MovieId" class="form-select" id="movieSelect" onchange="updateMovieInfo()">
+                                    <option value="">-- Wybierz film --</option>
+                                    @foreach (var movie in Model.ScreeningData.Movies)
+                                    {
+                                        <option value="@movie.MovieId"
+                                                data-duration="@movie.Duration"
+                                                data-title="@movie.Title"
+                                                data-genre="@movie.Genre">
+                                            @movie.Title (@movie.Duration min) - @movie.Genre
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ScreeningData.MovieId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ScreeningData.HallId" class="form-label">
+                                    <i class="fas fa-couch me-1"></i>Wybierz salę
+                                </label>
+                                <select asp-for="ScreeningData.HallId" class="form-select" id="hallSelect" onchange="updateHallInfo()">
+                                    <option value="">-- Wybierz salę --</option>
+                                    @foreach (var hall in Model.ScreeningData.Halls)
+                                    {
+                                        <option value="@hall.HallId"
+                                                data-capacity="@hall.Capacity"
+                                                data-type="@hall.HallType">
+                                            @hall.HallName (@hall.Capacity miejsc) - @hall.HallType
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ScreeningData.HallId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informacje o wybranym filmie i sali -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light" id="movieInfo" style="display: none;">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Informacje o filmie</h6>
+                                    <p class="mb-1"><strong>Tytuł:</strong> <span id="movieTitle">-</span></p>
+                                    <p class="mb-1"><strong>Czas trwania:</strong> <span id="movieDuration">-</span> min</p>
+                                    <p class="mb-0"><strong>Gatunek:</strong> <span id="movieGenre">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light" id="hallInfo" style="display: none;">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Informacje o sali</h6>
+                                    <p class="mb-1"><strong>Pojemność:</strong> <span id="hallCapacity">-</span> miejsc</p>
+                                    <p class="mb-0"><strong>Typ sali:</strong> <span id="hallType">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="ScreeningData.StartTime" class="form-label">
+                                    <i class="fas fa-calendar-alt me-1"></i>Data i godzina rozpoczęcia
+                                </label>
+                                <input asp-for="ScreeningData.StartTime" class="form-control"
+                                       type="datetime-local" id="startTimeInput" onchange="calculateEndTime()" />
+                                <span asp-validation-for="ScreeningData.StartTime" class="text-danger"></span>
+                                <small class="form-text text-muted">Minimum 1 godzina od teraz</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-clock me-1"></i>Czas zakończenia (automatyczny)
+                                </label>
+                                <input type="text" class="form-control bg-light" id="endTimeDisplay"
+                                       placeholder="Wybierz film i godzinę rozpoczęcia" readonly />
+                                <small class="form-text text-muted">Film + 30 min przerwy</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="ScreeningData.TicketPrice" class="form-label">
+                                    <i class="fas fa-coins me-1"></i>Cena biletu (PLN)
+                                </label>
+                                <input asp-for="ScreeningData.TicketPrice" class="form-control"
+                                       type="number" step="0.01" min="0.01" max="1000" />
+                                <span asp-validation-for="ScreeningData.TicketPrice" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sprawdzanie dostępności sali -->
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-info" onclick="checkAvailability()" id="checkAvailabilityBtn" disabled>
+                            <i class="fas fa-search me-1"></i>Sprawdź dostępność sali
+                        </button>
+                        <div id="availabilityResult" class="mt-2"></div>
+                    </div>
+
+                    <!-- Podsumowanie -->
+                    <div class="card bg-light mb-4" id="summaryCard" style="display: none;">
+                        <div class="card-header">
+                            <h6><i class="fas fa-clipboard-list me-2"></i>Podsumowanie seansu</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Film:</strong> <span id="summaryMovie">-</span></p>
+                                    <p class="mb-1"><strong>Sala:</strong> <span id="summaryHall">-</span></p>
+                                    <p class="mb-1"><strong>Data:</strong> <span id="summaryDate">-</span></p>
+                                    <p class="mb-0"><strong>Godzina:</strong> <span id="summaryTime">-</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Czas zakończenia:</strong> <span id="summaryEndTime">-</span></p>
+                                    <p class="mb-1"><strong>Cena biletu:</strong> <span id="summaryPrice">-</span></p>
+                                    <p class="mb-1"><strong>Dostępne miejsca:</strong> <span id="summaryCapacity">-</span></p>
+                                    <p class="mb-0"><strong>Potencjalny przychód:</strong> <span id="summaryRevenue">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Przyciski akcji -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-page="/Admin/Screenings/Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Anuluj
+                        </a>
+                        <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                            <i class="fas fa-save me-1"></i>Dodaj seans
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let selectedMovie = null;
+        let selectedHall = null;
+
+        // Ustaw minimalną datę na godzinę od teraz
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            document.getElementById('startTimeInput').min = now.toISOString().slice(0, 16);
+        });
+
+        function updateMovieInfo() {
+            const select = document.getElementById('movieSelect');
+            const option = select.selectedOptions[0];
+
+            if (option.value) {
+                selectedMovie = {
+                    id: option.value,
+                    title: option.getAttribute('data-title'),
+                    duration: parseInt(option.getAttribute('data-duration')),
+                    genre: option.getAttribute('data-genre')
+                };
+
+                document.getElementById('movieTitle').textContent = selectedMovie.title;
+                document.getElementById('movieDuration').textContent = selectedMovie.duration;
+                document.getElementById('movieGenre').textContent = selectedMovie.genre;
+                document.getElementById('movieInfo').style.display = 'block';
+
+                calculateEndTime();
+                updateSummary();
+                enableAvailabilityCheck();
+            } else {
+                selectedMovie = null;
+                document.getElementById('movieInfo').style.display = 'none';
+                clearEndTime();
+            }
+        }
+
+        function updateHallInfo() {
+            const select = document.getElementById('hallSelect');
+            const option = select.selectedOptions[0];
+
+            if (option.value) {
+                selectedHall = {
+                    id: option.value,
+                    capacity: parseInt(option.getAttribute('data-capacity')),
+                    type: option.getAttribute('data-type')
+                };
+
+                document.getElementById('hallCapacity').textContent = selectedHall.capacity;
+                document.getElementById('hallType').textContent = selectedHall.type;
+                document.getElementById('hallInfo').style.display = 'block';
+
+                updateSummary();
+                enableAvailabilityCheck();
+            } else {
+                selectedHall = null;
+                document.getElementById('hallInfo').style.display = 'none';
+                clearEndTime();
+            }
+        }
+
+        function calculateEndTime() {
+            const startTimeInput = document.getElementById('startTimeInput');
+            const endTimeDisplay = document.getElementById('endTimeDisplay');
+
+            if (selectedMovie && startTimeInput.value) {
+                const startTime = new Date(startTimeInput.value);
+                const endTime = new Date(startTime.getTime() + (selectedMovie.duration + 30) * 60000); // +30 min przerwy
+
+                endTimeDisplay.value = endTime.toLocaleString('pl-PL', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                updateSummary();
+                enableAvailabilityCheck();
+            } else {
+                clearEndTime();
+            }
+        }
+
+        function clearEndTime() {
+            document.getElementById('endTimeDisplay').value = '';
+            document.getElementById('checkAvailabilityBtn').disabled = true;
+            document.getElementById('availabilityResult').innerHTML = '';
+        }
+
+        function enableAvailabilityCheck() {
+            const btn = document.getElementById('checkAvailabilityBtn');
+            btn.disabled = !(selectedMovie && selectedHall && document.getElementById('startTimeInput').value);
+        }
+
+        function updateSummary() {
+            if (selectedMovie && selectedHall && document.getElementById('startTimeInput').value) {
+                const startTime = new Date(document.getElementById('startTimeInput').value);
+                const price = parseFloat(document.getElementById('ScreeningData_TicketPrice').value) || 0;
+
+                document.getElementById('summaryMovie').textContent = selectedMovie.title;
+                document.getElementById('summaryHall').textContent = `${selectedHall.type} (${selectedHall.capacity} miejsc)`;
+                document.getElementById('summaryDate').textContent = startTime.toLocaleDateString('pl-PL');
+                document.getElementById('summaryTime').textContent = startTime.toLocaleTimeString('pl-PL', {hour: '2-digit', minute: '2-digit'});
+                document.getElementById('summaryEndTime').textContent = document.getElementById('endTimeDisplay').value;
+                document.getElementById('summaryPrice').textContent = price.toLocaleString('pl-PL', {style: 'currency', currency: 'PLN'});
+                document.getElementById('summaryCapacity').textContent = selectedHall.capacity + ' miejsc';
+                document.getElementById('summaryRevenue').textContent = (price * selectedHall.capacity).toLocaleString('pl-PL', {style: 'currency', currency: 'PLN'});
+
+                document.getElementById('summaryCard').style.display = 'block';
+            } else {
+                document.getElementById('summaryCard').style.display = 'none';
+            }
+        }
+
+        async function checkAvailability() {
+            // Walidacja danych przed sprawdzeniem
+            if (!selectedMovie) {
+                showAlert('Najpierw wybierz film!', 'warning');
+                return;
+            }
+
+            if (!selectedHall) {
+                showAlert('Najpierw wybierz salę!', 'warning');
+                return;
+            }
+
+            const startTime = document.getElementById('startTimeInput').value;
+            if (!startTime) {
+                showAlert('Wprowadź datę i godzinę rozpoczęcia!', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('checkAvailabilityBtn');
+            const resultDiv = document.getElementById('availabilityResult');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sprawdzam...';
+
+            try {
+                const movieId = selectedMovie.id;
+                const hallId = selectedHall.id;
+
+                const response = await fetch(`?handler=CheckAvailability&movieId=${movieId}&hallId=${hallId}&startTime=${encodeURIComponent(startTime)}`);
+                const result = await response.json();
+
+                if (result.available) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Sala jest dostępna!</strong> Możesz utworzyć seans w tym terminie.
+                        </div>
+                    `;
+                    updateSubmitButton();
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Sala jest zajęta!</strong> ${result.message || 'Wybierz inny termin.'}
+                        </div>
+                    `;
+                    document.getElementById('submitBtn').disabled = true;
+                }
+            } catch (error) {
+                console.error('Błąd sprawdzania dostępności:', error);
+                resultDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Błąd podczas sprawdzania dostępności. Spróbuj ponownie.
+                    </div>
+                `;
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-search me-1"></i>Sprawdź dostępność sali';
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-2`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            // Dodaj na górę formularza
+            const form = document.getElementById('screeningForm');
+            form.insertBefore(alertDiv, form.firstChild);
+
+            // Usuń po 5 sekundach
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            const hasAvailabilityCheck = document.querySelector('.alert-success') !== null;
+
+            const isValid = selectedMovie && selectedHall &&
+                           document.getElementById('startTimeInput').value &&
+                           document.getElementById('ScreeningData_TicketPrice').value &&
+                           hasAvailabilityCheck;
+
+            submitBtn.disabled = !isValid;
+        }
+
+        // Event listeners
+        document.getElementById('startTimeInput').addEventListener('change', function() {
+            calculateEndTime();
+            enableAvailabilityCheck();
+        });
+        document.getElementById('ScreeningData_TicketPrice').addEventListener('input', updateSummary);
+        document.getElementById('movieSelect').addEventListener('change', function() {
+            // Wyczyść wyniki sprawdzania gdy zmieni się film
+            document.getElementById('availabilityResult').innerHTML = '';
+            document.getElementById('submitBtn').disabled = true;
+        });
+        document.getElementById('hallSelect').addEventListener('change', function() {
+            // Wyczyść wyniki sprawdzania gdy zmieni się sala
+            document.getElementById('availabilityResult').innerHTML = '';
+            document.getElementById('submitBtn').disabled = true;
+        });
+    </script>
+}

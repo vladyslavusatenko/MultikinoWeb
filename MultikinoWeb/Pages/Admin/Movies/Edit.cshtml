@@ -1,0 +1,253 @@
+﻿@page "{id:int}"
+@model AdminMoviesEditModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Edytuj film";
+}
+
+@if (Model.Movie == null)
+{
+    <div class="alert alert-danger">
+        <h4>Film nie został znaleziony</h4>
+        <p>Nie można znaleźć filmu o podanym ID.</p>
+        <a asp-page="/Admin/Movies/Index" class="btn btn-primary">Powrót do listy filmów</a>
+    </div>
+}
+else
+{
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-edit me-2"></i>Edytuj film: @Model.Movie.Title</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <input type="hidden" asp-for="MovieData.MovieId" />
+
+                        <div class="row">
+                            <!-- Obecny poster -->
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-image me-1"></i>Obecny poster
+                                    </label>
+                                    <div class="current-poster">
+                                        @if (Model.Movie.Poster != null)
+                                        {
+                                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Movie.Poster)"
+                                                 alt="@Model.Movie.Title" class="img-fluid rounded shadow-sm"
+                                                 style="max-height: 300px; width: 100%; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light d-flex align-items-center justify-content-center rounded"
+                                                 style="height: 300px;">
+                                                <i class="fas fa-film fa-3x text-muted"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Formularz edycji -->
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="MovieData.Title" class="form-label">
+                                                <i class="fas fa-film me-1"></i>Tytuł filmu
+                                            </label>
+                                            <input asp-for="MovieData.Title" class="form-control" />
+                                            <span asp-validation-for="MovieData.Title" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="MovieData.Director" class="form-label">
+                                                <i class="fas fa-user-tie me-1"></i>Reżyser
+                                            </label>
+                                            <input asp-for="MovieData.Director" class="form-control" />
+                                            <span asp-validation-for="MovieData.Director" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="MovieData.Description" class="form-label">
+                                        <i class="fas fa-align-left me-1"></i>Opis filmu
+                                    </label>
+                                    <textarea asp-for="MovieData.Description" class="form-control" rows="4"></textarea>
+                                    <span asp-validation-for="MovieData.Description" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="MovieData.Duration" class="form-label">
+                                                <i class="fas fa-clock me-1"></i>Czas trwania (min)
+                                            </label>
+                                            <input asp-for="MovieData.Duration" class="form-control" type="number" min="1" max="500" />
+                                            <span asp-validation-for="MovieData.Duration" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="MovieData.Genre" class="form-label">
+                                                <i class="fas fa-tags me-1"></i>Gatunek
+                                            </label>
+                                            <select asp-for="MovieData.Genre" class="form-select">
+                                                <option value="">Wybierz gatunek</option>
+                                                <option value="Akcja">Akcja</option>
+                                                <option value="Komedia">Komedia</option>
+                                                <option value="Dramat">Dramat</option>
+                                                <option value="Horror">Horror</option>
+                                                <option value="Sci-Fi">Sci-Fi</option>
+                                                <option value="Thriller">Thriller</option>
+                                                <option value="Animacja">Animacja</option>
+                                                <option value="Dokumentalny">Dokumentalny</option>
+                                                <option value="Familijny">Familijny</option>
+                                                <option value="Romans">Romans</option>
+                                            </select>
+                                            <span asp-validation-for="MovieData.Genre" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="MovieData.Rating" class="form-label">
+                                                <i class="fas fa-star me-1"></i>Ocena (1-10)
+                                            </label>
+                                            <input asp-for="MovieData.Rating" class="form-control" type="number"
+                                                   value="@Model.MovieData.Rating.ToString("0.#")"
+                                                   min="1.0" max="10.0" step="0.1" />
+                                            <span asp-validation-for="MovieData.Rating" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="MovieData.ReleaseDate" class="form-label">
+                                                <i class="fas fa-calendar-alt me-1"></i>Data premiery
+                                            </label>
+                                            <input asp-for="MovieData.ReleaseDate" class="form-control" type="date" />
+                                            <span asp-validation-for="MovieData.ReleaseDate" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-toggle-on me-1"></i>Status filmu
+                                            </label>
+                                            <div class="form-check form-switch">
+                                                <input asp-for="MovieData.IsActive" class="form-check-input" type="checkbox" />
+                                                <label asp-for="MovieData.IsActive" class="form-check-label">
+                                                    Film aktywny (widoczny w repertuarze)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="posterFile" class="form-label">
+                                        <i class="fas fa-upload me-1"></i>Zmień poster (opcjonalnie)
+                                    </label>
+                                    <input type="file" name="posterFile" id="posterFile" class="form-control"
+                                           accept="image/*" onchange="previewNewImage(this)" />
+                                    <small class="form-text text-muted">
+                                        Zostaw puste aby zachować obecny poster. Maksymalny rozmiar: 5MB (JPG, PNG, GIF)
+                                    </small>
+
+                                    <!-- Podgląd nowego obrazu -->
+                                    <div id="newImagePreview" class="mt-3" style="display: none;">
+                                        <h6>Podgląd nowego postera:</h6>
+                                        <img id="newPreview" src="#" alt="Nowy poster"
+                                             style="max-width: 200px; max-height: 300px; object-fit: cover;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informacje o seansach -->
+                        @if (Model.Movie.Screenings.Any())
+                        {
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Informacje o seansach</h6>
+                                <p class="mb-2">Ten film ma <strong>@Model.Movie.Screenings.Count()</strong> zaplanowanych seansów.</p>
+                                @{
+                                    var futureScreenings = Model.Movie.Screenings.Where(s => s.StartTime > DateTime.Now).Count();
+                                    var pastScreenings = Model.Movie.Screenings.Count() - futureScreenings;
+                                }
+                                <small class="text-muted">
+                                    Przyszłe seanse: @futureScreenings | Przeszłe seanse: @pastScreenings
+                                </small>
+                            </div>
+                        }
+
+                        <!-- Przyciski akcji -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <div>
+                                <a asp-page="/Movies/Details" asp-route-id="@Model.Movie.MovieId"
+                                   class="btn btn-outline-info" target="_blank">
+                                    <i class="fas fa-eye me-1"></i>Podgląd filmu
+                                </a>
+                            </div>
+                            <div>
+                                <a asp-page="/Admin/Movies/Index" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Anuluj
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>Zapisz zmiany
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewNewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    document.getElementById('newPreview').src = e.target.result;
+                    document.getElementById('newImagePreview').style.display = 'block';
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                document.getElementById('newImagePreview').style.display = 'none';
+            }
+        }
+
+        // Walidacja formularza przed wysłaniem
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('posterFile');
+            if (fileInput.files[0]) {
+                if (fileInput.files[0].size > 5 * 1024 * 1024) {
+                    e.preventDefault();
+                    alert('Plik postera jest za duży. Maksymalny rozmiar to 5MB.');
+                    return false;
+                }
+
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(fileInput.files[0].type)) {
+                    e.preventDefault();
+                    alert('Nieprawidłowy format pliku. Obsługiwane formaty: JPG, PNG, GIF.');
+                    return false;
+                }
+            }
+        });
+    </script>
+}
