@@ -1,4 +1,18 @@
-﻿// Improved Multikino JavaScript
+﻿// Improved Multikino JavaScript with new color palette
+
+// Color palette constants
+const COLORS = {
+    paynesGray: '#4f6d7a',
+    columbiaBlue: '#c0d6df',
+    aliceBlue: '#dbe9ee',
+    trueBlue: '#4a6fa5',
+    lapisLazuli: '#166088',
+    // Shades
+    paynesGrayLight: '#6b8490',
+    paynesGrayDark: '#3d5560',
+    trueBlueDark: '#3a5a85',
+    lapisLazuliLight: '#1f7ba8'
+};
 
 // Ensure dropdowns work properly
 document.addEventListener('DOMContentLoaded', function () {
@@ -75,10 +89,12 @@ document.addEventListener('DOMContentLoaded', function () {
     cards.forEach(card => {
         card.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = `0 8px 25px ${COLORS.paynesGray}33`; // 33 = 20% opacity
         });
 
         card.addEventListener('mouseleave', function () {
             this.style.transform = 'translateY(0)';
+            this.style.boxShadow = `0 4px 6px ${COLORS.paynesGray}1A`; // 1A = 10% opacity
         });
     });
 
@@ -89,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (item.getAttribute('href') === currentLocation) {
             item.classList.add('active');
             item.style.fontWeight = 'bold';
+            item.style.color = COLORS.aliceBlue + ' !important';
         }
     });
 
@@ -105,9 +122,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                 element.textContent = `${hours}h ${minutes}m`;
+                element.style.color = COLORS.trueBlue;
             } else {
                 element.textContent = 'Czas minął';
                 element.classList.add('text-danger');
+                element.style.color = '#dc3545';
             }
         }
 
@@ -152,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
     images.forEach(img => {
         img.addEventListener('error', function () {
             if (!this.src.includes('placeholder')) {
-                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJyYWsgcG9zdGVyYTwvdGV4dD48L3N2Zz4=';
+                this.src = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIke0NPTE9SUy5jb2x1bWJpYUJsdWV9Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iJHtDT0xPUlMucGF5bmVzR3JheX0iIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5CcmFrIHBvc3RlcmE8L3RleHQ+PC9zdmc+`;
                 this.alt = 'Brak postera';
             }
         });
@@ -174,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (navigator.onLine) {
                 statusElement.className = 'badge bg-success ms-1';
                 statusElement.innerHTML = '<i class="fas fa-database me-1"></i>Połączono (SQL Server)';
+                statusElement.style.backgroundColor = COLORS.lapisLazuli;
             } else {
                 statusElement.className = 'badge bg-danger ms-1';
                 statusElement.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Brak połączenia';
@@ -191,15 +211,31 @@ document.addEventListener('DOMContentLoaded', function () {
     formControls.forEach(control => {
         control.addEventListener('invalid', function () {
             this.classList.add('is-invalid');
+            this.style.borderColor = '#dc3545';
         });
 
         control.addEventListener('input', function () {
             if (this.validity.valid) {
                 this.classList.remove('is-invalid');
                 this.classList.add('is-valid');
+                this.style.borderColor = COLORS.lapisLazuli;
             } else {
                 this.classList.remove('is-valid');
                 this.classList.add('is-invalid');
+                this.style.borderColor = '#dc3545';
+            }
+        });
+
+        // Apply focus styles with new colors
+        control.addEventListener('focus', function () {
+            this.style.borderColor = COLORS.trueBlue;
+            this.style.boxShadow = `0 0 0 0.2rem ${COLORS.trueBlue}40`; // 40 = 25% opacity
+        });
+
+        control.addEventListener('blur', function () {
+            if (!this.classList.contains('is-invalid') && !this.classList.contains('is-valid')) {
+                this.style.borderColor = COLORS.columbiaBlue;
+                this.style.boxShadow = 'none';
             }
         });
     });
@@ -209,10 +245,27 @@ document.addEventListener('DOMContentLoaded', function () {
 function showAlert(message, type = 'info') {
     const alertContainer = document.querySelector('main') || document.body;
     const alertDiv = document.createElement('div');
+
+    // Map alert types to new color scheme
+    const alertColors = {
+        'success': COLORS.lapisLazuli,
+        'danger': '#dc3545',
+        'warning': '#ffc107',
+        'info': COLORS.trueBlue
+    };
+
+    const iconMap = {
+        'success': 'check-circle',
+        'danger': 'exclamation-triangle',
+        'warning': 'exclamation-triangle',
+        'info': 'info-circle'
+    };
+
     alertDiv.className = `alert alert-${type} alert-dismissible fade show temp-alert`;
     alertDiv.style.zIndex = '1065'; // Higher than dropdown
+    alertDiv.style.borderLeftColor = alertColors[type] || COLORS.trueBlue;
     alertDiv.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+        <i class="fas fa-${iconMap[type] || 'info-circle'} me-2"></i>
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
@@ -249,9 +302,57 @@ function formatDate(date, options = {}) {
     return new Intl.DateTimeFormat('pl-PL', { ...defaultOptions, ...options }).format(new Date(date));
 }
 
+// Function to apply color theme to dynamically created elements
+function applyColorTheme(element) {
+    // Apply new color theme to buttons
+    const primaryButtons = element.querySelectorAll('.btn-primary');
+    primaryButtons.forEach(btn => {
+        btn.style.background = `linear-gradient(135deg, ${COLORS.trueBlue} 0%, ${COLORS.trueBlueDark} 100%)`;
+    });
+
+    const successButtons = element.querySelectorAll('.btn-success');
+    successButtons.forEach(btn => {
+        btn.style.background = `linear-gradient(135deg, ${COLORS.lapisLazuli} 0%, ${COLORS.lapisLazuliDark} 100%)`;
+    });
+
+    // Apply theme to cards
+    const cards = element.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.style.boxShadow = `0 4px 6px ${COLORS.paynesGray}1A`;
+    });
+
+    // Apply theme to form controls
+    const formControls = element.querySelectorAll('.form-control');
+    formControls.forEach(control => {
+        control.style.borderColor = COLORS.columbiaBlue;
+    });
+}
+
+// Enhanced button click effects with new colors
+function addButtonEffects() {
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('mousedown', function () {
+            this.style.transform = 'translateY(1px)';
+        });
+
+        button.addEventListener('mouseup', function () {
+            this.style.transform = 'translateY(0)';
+        });
+
+        button.addEventListener('mouseleave', function () {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+}
+
+// Initialize button effects when DOM is ready
+document.addEventListener('DOMContentLoaded', addButtonEffects);
+
 // Debug mode (only in development)
 if (window.location.hostname === 'localhost') {
     console.log('Multikino Debug Mode Active');
+    console.log('Color Palette:', COLORS);
 
     // Add debug info to console
     console.log('User Session:', {
@@ -259,3 +360,6 @@ if (window.location.hostname === 'localhost') {
         currentPage: location.pathname
     });
 }
+
+// Export colors for use in other scripts
+window.MULTIKINO_COLORS = COLORS;

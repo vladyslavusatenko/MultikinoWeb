@@ -171,6 +171,18 @@
     @if (Model.RevenueReport != null)
     {
         <script>
+            // Color palette for charts
+            const chartColors = {
+                paynesGray: '#4f6d7a',
+                columbiaBlue: '#c0d6df',
+                aliceBlue: '#dbe9ee',
+                trueBlue: '#4a6fa5',
+                lapisLazuli: '#166088',
+                paynesGrayLight: '#6b8490',
+                trueBlueDark: '#3a5a85',
+                lapisLazuliLight: '#1f7ba8'
+            };
+
             // Wykres przychodów dziennych
             const dailyCtx = document.getElementById('dailyRevenueChart').getContext('2d');
             new Chart(dailyCtx, {
@@ -180,20 +192,51 @@
                     datasets: [{
                         label: 'Przychód dzienny',
                         data: @Html.Raw(Json.Serialize(Model.RevenueReport.DailyRevenue.Select(d => d.Revenue).ToArray())),
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.1
+                        borderColor: chartColors.trueBlue,
+                        backgroundColor: chartColors.trueBlue + '40', // 40 = 25% opacity
+                        pointBackgroundColor: chartColors.lapisLazuli,
+                        pointBorderColor: chartColors.lapisLazuli,
+                        pointHoverBackgroundColor: chartColors.lapisLazuliLight,
+                        pointHoverBorderColor: chartColors.lapisLazuliLight,
+                        tension: 0.3,
+                        fill: true
                     }]
                 },
                 options: {
                     responsive: true,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: chartColors.paynesGray,
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
                     scales: {
+                        x: {
+                            ticks: {
+                                color: chartColors.paynesGray
+                            },
+                            grid: {
+                                color: chartColors.columbiaBlue
+                            }
+                        },
                         y: {
                             beginAtZero: true,
                             ticks: {
+                                color: chartColors.paynesGray,
                                 callback: function(value) {
                                     return value.toLocaleString('pl-PL', {style: 'currency', currency: 'PLN'});
                                 }
+                            },
+                            grid: {
+                                color: chartColors.columbiaBlue
                             }
                         }
                     }
@@ -202,29 +245,94 @@
 
             // Wykres przychodów według sal
             const hallCtx = document.getElementById('hallRevenueChart').getContext('2d');
+            const hallChartColors = [
+                chartColors.lapisLazuli,
+                chartColors.trueBlue,
+                chartColors.paynesGray,
+                chartColors.lapisLazuliLight,
+                chartColors.paynesGrayLight,
+                chartColors.columbiaBlue
+            ];
+
             new Chart(hallCtx, {
                 type: 'doughnut',
                 data: {
                     labels: @Html.Raw(Json.Serialize(Model.RevenueReport.RevenueByHall.Select(h => h.Hall.HallName).ToArray())),
                     datasets: [{
                         data: @Html.Raw(Json.Serialize(Model.RevenueReport.RevenueByHall.Select(h => h.Revenue).ToArray())),
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.8)',
-                            'rgba(54, 162, 235, 0.8)',
-                            'rgba(255, 205, 86, 0.8)',
-                            'rgba(75, 192, 192, 0.8)',
-                            'rgba(153, 102, 255, 0.8)'
-                        ]
+                        backgroundColor: hallChartColors,
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverBorderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                color: chartColors.paynesGray,
+                                font: {
+                                    weight: 'bold'
+                                },
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: chartColors.paynesGray,
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: chartColors.trueBlue,
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value.toLocaleString('pl-PL', {style: 'currency', currency: 'PLN'})} (${percentage}%)`;
+                                }
+                            }
                         }
+                    },
+                    cutout: '50%',
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true
                     }
                 }
+            });
+
+            // Add hover effects to charts
+            const charts = document.querySelectorAll('canvas');
+            charts.forEach(chart => {
+                chart.addEventListener('mouseenter', function() {
+                    this.style.cursor = 'pointer';
+                });
+
+                chart.addEventListener('mouseleave', function() {
+                    this.style.cursor = 'default';
+                });
+            });
+
+            // Add chart animation on scroll
+            const observerOptions = {
+                threshold: 0.5,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const chartObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                    }
+                });
+            }, observerOptions);
+
+            charts.forEach(chart => {
+                chartObserver.observe(chart.parentElement);
             });
         </script>
     }
