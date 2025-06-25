@@ -6,10 +6,11 @@
     <title>@ViewData["Title"] - Multikino</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body class="d-flex flex-column h-100">
-    <header>
+    <header style="position: relative; z-index: 1030;">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
             <div class="container-fluid" style="justify-content: flex-start !important;">
                 <!-- Logo po lewej -->
@@ -17,7 +18,8 @@
                     <i class="fas fa-film me-2"></i>Multikino
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -25,22 +27,44 @@
                     <!-- Menu główne po lewej -->
                     <ul class="navbar-nav" style="flex-direction: row; margin-right: auto;">
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-page="/Index">Strona główna</a>
+                            <a class="nav-link text-white" asp-page="/Index">
+                                <i class="fas fa-home me-1"></i>Strona główna
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-page="/Movies/Index">Filmy</a>
+                            <a class="nav-link text-white" asp-page="/Movies/Index">
+                                <i class="fas fa-film me-1"></i>Filmy
+                            </a>
                         </li>
                         @if (Context.Session.GetString("UserRole") == "Admin")
                         {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-                                    Panel Admin
+                            <li class="nav-item dropdown" style="position: relative;">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false"
+                                   style="display: flex; align-items: center;">
+                                    <i class="fas fa-cog me-1"></i>Panel Admin
                                 </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-page="/Admin/Index">Dashboard</a></li>
-                                    <li><a class="dropdown-item" asp-page="/Admin/Movies/Index">Zarządzaj filmami</a></li>
-                                    <li><a class="dropdown-item" asp-page="/Admin/Screenings/Index">Zarządzaj seansami</a></li>
-                                    <li><a class="dropdown-item" asp-page="/Admin/Reports/Index">Raporty</a></li>
+                                <ul class="dropdown-menu" style="position: absolute; top: 100%; left: 0; margin-top: 0.125rem;">
+                                    <li>
+                                        <a class="dropdown-item" asp-page="/Admin/Index">
+                                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-page="/Admin/Movies/Index">
+                                            <i class="fas fa-film me-2"></i>Zarządzaj filmami
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-page="/Admin/Screenings/Index">
+                                            <i class="fas fa-calendar me-2"></i>Zarządzaj seansami
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-page="/Admin/Reports/Index">
+                                            <i class="fas fa-chart-bar me-2"></i>Raporty
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         }
@@ -50,11 +74,13 @@
                     <ul class="navbar-nav" style="flex-direction: row;">
                         @if (Context.Session.GetString("UserId") != null)
                         {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                            <li class="nav-item dropdown" style="position: relative;">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false"
+                                   style="display: flex; align-items: center;">
                                     <i class="fas fa-user-circle me-1"></i>@Context.Session.GetString("UserName")
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
+                                <ul class="dropdown-menu dropdown-menu-end" style="position: absolute; top: 100%; right: 0; margin-top: 0.125rem;">
                                     <li>
                                         <a class="dropdown-item" asp-page="/Account/Profile">
                                             <i class="fas fa-user me-2"></i>Profil
@@ -93,14 +119,15 @@
         </nav>
     </header>
 
-    <div class="container flex-fill">
-        <main role="main" class="pb-3">
+    <!-- Alert container with high z-index -->
+    <div id="alert-container" style="position: relative; z-index: 10100;">
+        <div class="container">
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="fas fa-check-circle me-2"></i>
                     @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
                 </div>
             }
             @if (TempData["ErrorMessage"] != null)
@@ -108,9 +135,14 @@
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
                 </div>
             }
+        </div>
+    </div>
+
+    <div class="container flex-fill">
+        <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
@@ -119,7 +151,9 @@
         <div class="container py-3">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p class="mb-0 text-white">&copy; 2025 - Multikino - Projekt bazodanowy</p>
+                    <p class="mb-0 text-white">
+                        <i class="fas fa-copyright me-1"></i>&copy; 2025 - Multikino - Projekt bazodanowy
+                    </p>
                 </div>
                 <div class="col-md-6">
                     <div class="text-end">
@@ -138,6 +172,126 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Improved Bootstrap dropdown initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure all dropdowns work properly with correct z-index
+            const dropdowns = document.querySelectorAll('.dropdown');
+            dropdowns.forEach(dropdown => {
+                dropdown.addEventListener('show.bs.dropdown', function () {
+                    // Ensure dropdown appears above all other elements
+                    const menu = this.querySelector('.dropdown-menu');
+                    if (menu) {
+                        menu.style.zIndex = '10001';
+                        menu.style.position = 'absolute';
+                    }
+                });
+
+                dropdown.addEventListener('hide.bs.dropdown', function () {
+                    // Reset z-index when hiding
+                    const menu = this.querySelector('.dropdown-menu');
+                    if (menu) {
+                        menu.style.zIndex = '';
+                    }
+                });
+            });
+
+            // Auto-hide alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert:not(.alert-persistent)');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        if (bsAlert) {
+                            bsAlert.close();
+                        }
+                    }
+                }, 5000);
+            });
+
+            // Enhanced navbar toggler for mobile
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+
+            if (navbarToggler && navbarCollapse) {
+                navbarToggler.addEventListener('click', function() {
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !isExpanded);
+                });
+
+                // Close mobile menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!navbarCollapse.contains(event.target) && !navbarToggler.contains(event.target)) {
+                        if (navbarCollapse.classList.contains('show')) {
+                            const bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+                                toggle: false
+                            });
+                            bsCollapse.hide();
+                        }
+                    }
+                });
+            }
+
+            // Fix dropdown positioning on mobile
+            if (window.innerWidth <= 768) {
+                const dropdownMenus = document.querySelectorAll('.dropdown-menu');
+                dropdownMenus.forEach(menu => {
+                    menu.style.position = 'fixed';
+                    menu.style.top = 'auto';
+                    menu.style.left = '1rem';
+                    menu.style.right = '1rem';
+                    menu.style.margin = '0';
+                    menu.style.maxWidth = 'calc(100vw - 2rem)';
+                });
+            }
+        });
+
+        // Global function for showing alerts
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alert-container') || document.querySelector('.container');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show temp-alert`;
+            alertDiv.style.zIndex = '10100';
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
+            `;
+
+            alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    const bsAlert = new bootstrap.Alert(alertDiv);
+                    if (bsAlert) {
+                        bsAlert.close();
+                    }
+                }
+            }, 5000);
+        }
+
+        // Connection status checker
+        function checkConnectionStatus() {
+            const statusElement = document.querySelector('.badge');
+            if (statusElement && statusElement.textContent.includes('Połączono')) {
+                if (navigator.onLine) {
+                    statusElement.className = 'badge bg-success ms-1';
+                    statusElement.innerHTML = '<i class="fas fa-database me-1"></i>Połączono (SQL Server)';
+                } else {
+                    statusElement.className = 'badge bg-danger ms-1';
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Brak połączenia';
+                }
+            }
+        }
+
+        // Check connection status on load and when connection changes
+        window.addEventListener('load', checkConnectionStatus);
+        window.addEventListener('online', checkConnectionStatus);
+        window.addEventListener('offline', checkConnectionStatus);
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
