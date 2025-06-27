@@ -36,7 +36,6 @@ namespace MultikinoWeb.Pages.Account
                 return Page();
             }
 
-            // Ustawienie sesji
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
             HttpContext.Session.SetString("UserRole", user.Role);
@@ -44,7 +43,6 @@ namespace MultikinoWeb.Pages.Account
 
             TempData["SuccessMessage"] = "Pomyślnie zalogowano!";
 
-            // Przekierowanie w zależności od roli
             if (user.Role == "Admin")
             {
                 return RedirectToPage("/Admin/Index");

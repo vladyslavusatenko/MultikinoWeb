@@ -27,14 +27,12 @@ namespace MultikinoWeb.Pages.Admin.Reports
 
         public async Task OnGetAsync()
         {
-            // Set default dates if not provided
             if (!StartDate.HasValue)
                 StartDate = DateTime.Today.AddDays(-30);
 
             if (!EndDate.HasValue)
                 EndDate = DateTime.Today;
 
-            // Generate reports only if dates are provided
             if (StartDate.HasValue && EndDate.HasValue)
             {
                 RevenueReport = await _adminService.GetRevenueReportAsync(StartDate, EndDate);

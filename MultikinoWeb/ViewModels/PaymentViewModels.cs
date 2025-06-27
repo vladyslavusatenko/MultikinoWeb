@@ -8,13 +8,10 @@ namespace MultikinoWeb.ViewModels
         public decimal Amount { get; set; }
         public int BookingId { get; set; }
 
-        // Karta płatnicza
         public CardPaymentViewModel? CardPayment { get; set; }
 
-        // BLIK
         public BlikPaymentViewModel? BlikPayment { get; set; }
 
-        // Przelew
         public TransferPaymentViewModel? TransferPayment { get; set; }
     }
 

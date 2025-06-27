@@ -31,7 +31,6 @@ namespace MultikinoWeb.Pages.Admin.Movies
                 return NotFound();
             }
 
-            // Załaduj dane do formularza
             MovieData = new EditMovieViewModel
             {
                 MovieId = Movie.MovieId,
@@ -62,7 +61,6 @@ namespace MultikinoWeb.Pages.Admin.Movies
                 return Page();
             }
 
-            // Validate poster file if uploaded
             if (posterFile != null)
             {
                 if (posterFile.Length > 5 * 1024 * 1024) // 5MB limit
@@ -79,7 +77,6 @@ namespace MultikinoWeb.Pages.Admin.Movies
                 }
             }
 
-            // Update movie properties
             Movie.Title = MovieData.Title;
             Movie.Description = MovieData.Description;
             Movie.Duration = MovieData.Duration;
@@ -89,7 +86,6 @@ namespace MultikinoWeb.Pages.Admin.Movies
             Movie.Rating = MovieData.Rating;
             Movie.IsActive = MovieData.IsActive;
 
-            // Handle poster upload if provided
             if (posterFile != null)
             {
                 using var memoryStream = new MemoryStream();

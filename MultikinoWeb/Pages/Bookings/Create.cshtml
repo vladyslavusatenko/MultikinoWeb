@@ -21,7 +21,7 @@ else
                     <h3><i class="fas fa-ticket-alt me-2"></i>Rezerwacja biletu</h3>
                 </div>
                 <div class="card-body">
-                    <!-- Informacje o seansie -->
+                    
                     <div class="screening-info bg-light p-3 rounded mb-4">
                         <div class="row">
                             <div class="col-md-8">
@@ -62,7 +62,7 @@ else
                     }
                     else
                     {
-                        <!-- Formularz rezerwacji -->
+                        
                         <form method="post" id="bookingForm">
                             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -71,16 +71,16 @@ else
                             <input type="hidden" asp-for="BookingData.NumberOfTickets" id="hiddenTicketCount" />
                             <input type="hidden" asp-for="BookingData.SelectedSeats" id="selectedSeatsInput" />
 
-                            <!-- Sekcja wyboru miejsc -->
+                            
                             <div class="seat-selection mb-4">
                                 <h6><i class="fas fa-couch me-2"></i>Wybierz miejsca w sali @Model.Screening.Hall.HallName</h6>
 
-                                <!-- Ekran -->
+                                
                                 <div class="screen text-center mb-3">
                                     <i class="fas fa-tv me-2"></i>EKRAN
                                 </div>
 
-                                <!-- Mapa miejsc -->
+                                
                                 <div class="seat-map" id="seatMap">
                                     @{
                                         var rows = 10; // Ilość rzędów
@@ -107,7 +107,7 @@ else
                                     }
                                 </div>
 
-                                <!-- Legenda -->
+                                
                                 <div class="seat-legend text-center mt-3">
                                     <div class="row justify-content-center">
                                         <div class="col-auto">
@@ -131,13 +131,13 @@ else
                                     </div>
                                 </div>
 
-                                <!-- Wybrane miejsca display -->
+                                
                                 <div class="selected-seats-display mt-3 p-3 bg-light rounded" id="selectedSeatsDisplay">
                                     <em>Nie wybrano miejsc</em>
                                 </div>
                             </div>
 
-                            <!-- Metoda płatności -->
+                            
                             <div class="payment-section mb-4">
                                 <h6><i class="fas fa-credit-card me-2"></i>Metoda płatności</h6>
                                 <div class="row">
@@ -153,7 +153,7 @@ else
                                 </div>
                             </div>
 
-                            <!-- Podsumowanie zamówienia -->
+                            
                             <div class="order-summary bg-light p-4 rounded mb-4">
                                 <h6><i class="fas fa-calculator me-2"></i>Podsumowanie zamówienia</h6>
                                 <div class="row">
@@ -173,7 +173,7 @@ else
                                         <hr>
                                         <div class="d-flex justify-content-between">
                                             <strong>Łączna kwota:</strong>
-                                            <strong id="totalAmount" class="text-success">0,00 $</strong>
+                                            <strong id="totalAmount" class="text-success">$0,00</strong>
                                         </div>
                                     </div>
                                     <div class="col-md-4 text-center">
@@ -185,7 +185,7 @@ else
                                 </div>
                             </div>
 
-                            <!-- Checkbox regulaminu -->
+                            
                             <div class="form-check mb-4">
                                 <input class="form-check-input" type="checkbox" id="termsAccept" required>
                                 <label class="form-check-label" for="termsAccept">
@@ -197,7 +197,7 @@ else
                                 </label>
                             </div>
 
-                            <!-- Przyciski akcji -->
+                            
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                 <a asp-page="/Movies/Details" asp-route-id="@Model.Screening.MovieId"
                                    class="btn btn-outline-secondary">
@@ -229,37 +229,30 @@ else
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Zmienne globalne
         let selectedSeats = [];
         const maxSeats = 10;
         const ticketPrice = @Model.Screening.TicketPrice;
         const screeningId = @Model.Screening.ScreeningId;
 
-        // POBIERZ ZAJĘTE MIEJSCA Z SERWERA
         const occupiedSeats = @Html.Raw(Json.Serialize(Model.OccupiedSeats));
 
-        // Funkcja przełączania miejsc
         function toggleSeat(seatElement) {
             const seatId = seatElement.getAttribute('data-seat');
 
-            // Sprawdź czy miejsce nie jest zajęte
             if (occupiedSeats.includes(seatId)) {
                 showAlert('To miejsce jest już zajęte!', 'warning');
                 return;
             }
 
             if (seatElement.classList.contains('selected')) {
-                // Usuń zaznaczenie
                 seatElement.classList.remove('selected');
                 seatElement.classList.add('available');
                 selectedSeats = selectedSeats.filter(id => id !== seatId);
             } else if (selectedSeats.length < maxSeats) {
-                // Dodaj zaznaczenie
                 seatElement.classList.remove('available');
                 seatElement.classList.add('selected');
                 selectedSeats.push(seatId);
             } else {
-                // Pokaż alert gdy za dużo miejsc
                 showAlert(`Można wybrać maksymalnie ${maxSeats} miejsc.`, 'warning');
                 return;
             }
@@ -269,25 +262,21 @@ else
             updateSubmitButton();
         }
 
-        // Aktualizacja wybranych miejsc
         function updateSelectedSeats() {
             document.getElementById('selectedSeatsInput').value = selectedSeats.join(',');
             document.getElementById('hiddenTicketCount').value = selectedSeats.length;
             document.getElementById('ticketCountDisplay').textContent = selectedSeats.length;
         }
 
-        // Aktualizacja podsumowania
         function updateSummary() {
             const count = selectedSeats.length;
             const total = count * ticketPrice;
 
-            // Aktualizuj łączną kwotę
             document.getElementById('totalAmount').textContent = total.toLocaleString('pl-PL', {
                 style: 'currency',
                 currency: 'PLN'
             });
 
-            // Aktualizuj wybrane miejsca
             const selectedSeatsDisplay = document.getElementById('selectedSeatsDisplay');
             const selectedSeatsText = document.getElementById('selectedSeatsText');
 
@@ -301,7 +290,6 @@ else
             }
         }
 
-        // Aktualizacja przycisku potwierdzenia
         function updateSubmitButton() {
             const submitBtn = document.getElementById('confirmBookingBtn');
             const termsCheckbox = document.getElementById('termsAccept');
@@ -317,7 +305,6 @@ else
             }
         }
 
-        // Walidacja formularza
         function validateForm() {
             if (selectedSeats.length === 0) {
                 showAlert('Musisz wybrać przynajmniej jedno miejsce.', 'danger');
@@ -333,13 +320,10 @@ else
             return true;
         }
 
-        // Pokazywanie alertów
         function showAlert(message, type) {
-            // Usuń poprzednie alerty
             const existingAlerts = document.querySelectorAll('.temp-alert');
             existingAlerts.forEach(alert => alert.remove());
 
-            // Utwórz nowy alert
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show temp-alert`;
             alertDiv.innerHTML = `
@@ -347,11 +331,9 @@ else
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
 
-            // Dodaj alert na górę formularza
             const form = document.getElementById('bookingForm');
             form.insertBefore(alertDiv, form.firstChild);
 
-            // Usuń alert automatycznie po 5 sekundach
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
@@ -359,24 +341,20 @@ else
             }, 5000);
         }
 
-        // Funkcja odświeżania zajętych miejsc
         async function refreshOccupiedSeats() {
             try {
                 const response = await fetch(`?handler=OccupiedSeats&screeningId=${screeningId}`);
                 const updatedOccupiedSeats = await response.json();
 
-                // Zaktualizuj mapę miejsc
                 document.querySelectorAll('.seat').forEach(seat => {
                     const seatId = seat.getAttribute('data-seat');
 
                     if (updatedOccupiedSeats.includes(seatId)) {
-                        // Miejsce zostało zajęte
                         if (!seat.classList.contains('occupied')) {
                             seat.classList.remove('available', 'selected');
                             seat.classList.add('occupied');
                             seat.onclick = null;
 
-                            // Usuń z wybranych miejsc jeśli było wybrane
                             if (selectedSeats.includes(seatId)) {
                                 selectedSeats = selectedSeats.filter(id => id !== seatId);
                                 updateSelectedSeats();
@@ -392,13 +370,10 @@ else
             }
         }
 
-        // Inicjalizacja po załadowaniu strony
         document.addEventListener('DOMContentLoaded', function() {
-            // Nasłuchuj zmian w checkbox regulaminu
             const termsCheckbox = document.getElementById('termsAccept');
             termsCheckbox.addEventListener('change', updateSubmitButton);
 
-            // Dodaj walidację do formularza
             const form = document.getElementById('bookingForm');
             form.addEventListener('submit', function(e) {
                 if (!validateForm()) {
@@ -406,14 +381,11 @@ else
                 }
             });
 
-            // Inicjalizuj stan początkowy
             updateSummary();
             updateSubmitButton();
 
-            // Odświeżaj zajęte miejsca co 30 sekund
             setInterval(refreshOccupiedSeats, 30000);
 
-            // Dodaj efekt hover do miejsc dostępnych
             const availableSeats = document.querySelectorAll('.seat.available');
             availableSeats.forEach(seat => {
                 seat.addEventListener('mouseenter', function() {

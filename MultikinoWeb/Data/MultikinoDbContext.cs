@@ -20,7 +20,6 @@ namespace MultikinoWeb.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Konfiguracja relacji
             modelBuilder.Entity<Screening>()
                 .HasOne(s => s.Movie)
                 .WithMany(m => m.Screenings)
@@ -46,7 +45,6 @@ namespace MultikinoWeb.Data
                 .WithMany(b => b.Tickets)
                 .HasForeignKey(t => t.BookingId);
 
-            // Indeks unikalny dla email
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();

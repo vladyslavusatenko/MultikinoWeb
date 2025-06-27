@@ -10,25 +10,19 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Konfiguracja bazy danych
 builder.Services.AddDbContext<MultikinoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Rejestracja serwisów
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
-// Dodaj po linii z IAdminService
 builder.Services.AddScoped<IScreeningCleanupService, ScreeningCleanupService>();
-// Dodaj także HostedService dla automatycznego wywołania
 builder.Services.AddHostedService<ScreeningCleanupBackgroundService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
-// Dodanie Razor Pages
 builder.Services.AddRazorPages();
 
-// Konfiguracja sesji
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -54,7 +48,6 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 var app = builder.Build();
 
-// Inicjalizacja bazy danych
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<MultikinoDbContext>();
@@ -82,12 +75,10 @@ app.MapRazorPages();
 
 app.Run();
 
-// Metoda inicjalizacji danych
 static async Task SeedData(MultikinoDbContext context)
 {
     if (context.Users.Any()) return;
 
-    // Dodaj administratora
     var admin = new MultikinoWeb.Models.User
     {
         FirstName = "Admin",
@@ -100,7 +91,6 @@ static async Task SeedData(MultikinoDbContext context)
     };
     context.Users.Add(admin);
 
-    // Dodaj sale kinowe
     var halls = new[]
     {
         new MultikinoWeb.Models.CinemaHall { HallName = "Sala 1", Capacity = 120, HallType = "Standard", IsActive = true },
@@ -109,7 +99,6 @@ static async Task SeedData(MultikinoDbContext context)
     };
     context.CinemaHalls.AddRange(halls);
 
-    // Dodaj przykładowe filmy
     var movies = new[]
     {
         new MultikinoWeb.Models.Movie
@@ -139,7 +128,6 @@ static async Task SeedData(MultikinoDbContext context)
 
     await context.SaveChangesAsync();
 
-    // Dodaj seanse
     var screenings = new[]
     {
         new MultikinoWeb.Models.Screening

@@ -15,7 +15,7 @@
 else
 {
     <div class="row">
-        <!-- Poster filmu -->
+        
         <div class="col-lg-4 col-md-5 mb-4">
             <div class="card shadow">
                 @if (Model.Movie.Poster != null)
@@ -32,7 +32,7 @@ else
             </div>
         </div>
 
-        <!-- Informacje o filmie -->
+        
         <div class="col-lg-8 col-md-7">
             <div class="movie-header mb-4">
                 <h1 class="display-5 mb-3">@Model.Movie.Title</h1>
@@ -71,7 +71,7 @@ else
                     </div>
                 </div>
 
-                <!-- Rating display -->
+                
                 <div class="rating-display mb-4">
                     <div class="d-flex align-items-center">
                         <div class="rating-stars me-3">
@@ -101,7 +101,7 @@ else
                 </div>
             </div>
 
-            <!-- Opis filmu -->
+            
             <div class="movie-description mb-4">
                 <h5><i class="fas fa-align-left me-2"></i>Opis filmu</h5>
                 <div class="card">
@@ -111,7 +111,7 @@ else
                 </div>
             </div>
 
-            <!-- Przyciski akcji -->
+            
             <div class="action-buttons">
                 <div class="d-grid gap-2 d-md-flex">
                     @if (Model.AvailableScreenings.Any())
@@ -159,7 +159,7 @@ else
         </div>
     </div>
 
-    <!-- Dodatkowe informacje -->
+    
     <div class="row mt-5">
         <div class="col-12">
             <div class="card">

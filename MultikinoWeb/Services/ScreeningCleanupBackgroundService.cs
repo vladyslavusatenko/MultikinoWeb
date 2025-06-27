@@ -24,7 +24,6 @@
 
                     await cleanupService.ProcessExpiredScreeningsAsync();
 
-                    // Sprawdzaj co godzinę
                     await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
                 }
                 catch (Exception ex)

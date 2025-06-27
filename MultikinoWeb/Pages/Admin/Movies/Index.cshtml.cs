@@ -18,7 +18,6 @@ public class AdminMoviesIndexModel : PageModel
         _context = context; // DODAJ tę linię
     }
 
-    // reszta kodu bez zmian...
     public IEnumerable<Movie> Movies { get; set; } = new List<Movie>();
 
     [BindProperty(SupportsGet = true)]
@@ -50,7 +49,6 @@ public class AdminMoviesIndexModel : PageModel
         return RedirectToPage();
     }
 
-    // TUTAJ jest poprawiona metoda OnPostDeleteAsync:
     public async Task<IActionResult> OnPostDeleteAsync(int id)
     {
         var movie = await _movieService.GetMovieByIdAsync(id);
@@ -60,7 +58,6 @@ public class AdminMoviesIndexModel : PageModel
             return RedirectToPage();
         }
 
-        // Sprawdź czy ma przypisane seanse (przyszłe lub przeszłe)
         var hasScreenings = await _context.Screenings
             .AnyAsync(s => s.MovieId == id);
 
@@ -70,7 +67,6 @@ public class AdminMoviesIndexModel : PageModel
             return RedirectToPage();
         }
 
-        // Sprawdź czy ma rezerwacje
         var hasBookings = await _context.Bookings
             .AnyAsync(b => b.Screening.MovieId == id);
 
@@ -80,7 +76,6 @@ public class AdminMoviesIndexModel : PageModel
             return RedirectToPage();
         }
 
-        // Usuń film (fizycznie z bazy)
         _context.Movies.Remove(movie);
         await _context.SaveChangesAsync();
 
@@ -88,7 +83,6 @@ public class AdminMoviesIndexModel : PageModel
         return RedirectToPage();
     }
 
-    // reszta metod bez zmian...
     private IEnumerable<Movie> FilterMovies(IEnumerable<Movie> movies)
     {
         if (!string.IsNullOrEmpty(SearchTerm))

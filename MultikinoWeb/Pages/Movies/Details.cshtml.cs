@@ -28,7 +28,6 @@ namespace MultikinoWeb.Pages.Movies
                 return NotFound();
             }
 
-            // Get available screenings for this movie (future screenings only)
             AvailableScreenings = await _context.Screenings
                 .Include(s => s.Hall)
                 .Where(s => s.MovieId == id && s.StartTime > DateTime.Now)

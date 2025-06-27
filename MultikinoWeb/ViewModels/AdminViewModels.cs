@@ -60,7 +60,6 @@ namespace MultikinoWeb.ViewModels
         [Range(0.01, 1000, ErrorMessage = "Cena biletu musi być większa niż 0")]
         public decimal TicketPrice { get; set; } = 25.00m;
 
-        // For dropdown lists
         public IEnumerable<Movie> Movies { get; set; } = new List<Movie>();
         public IEnumerable<CinemaHall> Halls { get; set; } = new List<CinemaHall>();
     }

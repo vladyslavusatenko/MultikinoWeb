@@ -29,7 +29,7 @@ else
                         <input type="hidden" asp-for="MovieData.MovieId" />
 
                         <div class="row">
-                            <!-- Obecny poster -->
+                            
                             <div class="col-md-3">
                                 <div class="form-group mb-3">
                                     <label class="form-label">
@@ -53,7 +53,7 @@ else
                                 </div>
                             </div>
 
-                            <!-- Formularz edycji -->
+                            
                             <div class="col-md-9">
                                 <div class="row">
                                     <div class="col-md-6">
@@ -163,7 +163,7 @@ else
                                         Zostaw puste aby zachować obecny poster. Maksymalny rozmiar: 5MB (JPG, PNG, GIF)
                                     </small>
 
-                                    <!-- Podgląd nowego obrazu -->
+                                    
                                     <div id="newImagePreview" class="mt-3" style="display: none;">
                                         <h6>Podgląd nowego postera:</h6>
                                         <img id="newPreview" src="#" alt="Nowy poster"
@@ -173,7 +173,7 @@ else
                             </div>
                         </div>
 
-                        <!-- Informacje o seansach -->
+                        
                         @if (Model.Movie.Screenings.Any())
                         {
                             <div class="alert alert-info">
@@ -189,7 +189,7 @@ else
                             </div>
                         }
 
-                        <!-- Przyciski akcji -->
+                        
                         <div class="d-grid gap-2 d-md-flex justify-content-md-between">
                             <div>
                                 <a asp-page="/Movies/Details" asp-route-id="@Model.Movie.MovieId"
@@ -231,7 +231,6 @@ else
             }
         }
 
-        // Walidacja formularza przed wysłaniem
         document.querySelector('form').addEventListener('submit', function(e) {
             const fileInput = document.getElementById('posterFile');
             if (fileInput.files[0]) {

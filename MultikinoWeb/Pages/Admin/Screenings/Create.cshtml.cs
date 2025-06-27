@@ -29,7 +29,6 @@ namespace MultikinoWeb.Pages.Admin.Screenings
         {
             await LoadDropdownDataAsync();
 
-            // Set default values
             ScreeningData.StartTime = DateTime.Now.AddHours(1).Date.AddHours(DateTime.Now.Hour + 1);
             ScreeningData.TicketPrice = 25.00m;
         }
@@ -43,7 +42,6 @@ namespace MultikinoWeb.Pages.Admin.Screenings
                 return Page();
             }
 
-            // Additional validations
             if (ScreeningData.StartTime <= DateTime.Now.AddMinutes(30))
             {
                 ModelState.AddModelError("ScreeningData.StartTime", "Seans musi rozpocząć się przynajmniej 30 minut od teraz.");
@@ -59,31 +57,26 @@ namespace MultikinoWeb.Pages.Admin.Screenings
                 return Page();
             }
 
-            // Check if movie is active
             if (!movie.IsActive)
             {
                 ModelState.AddModelError("ScreeningData.MovieId", "Wybrany film nie jest aktywny.");
                 return Page();
             }
 
-            // Check if hall is active
             if (!hall.IsActive)
             {
                 ModelState.AddModelError("ScreeningData.HallId", "Wybrana sala nie jest aktywna.");
                 return Page();
             }
 
-            // Calculate end time
             var endTime = ScreeningData.StartTime.AddMinutes(movie.Duration + 30);
 
-            // Check hall availability
             if (!await _adminService.IsHallAvailableAsync(ScreeningData.HallId, ScreeningData.StartTime, endTime))
             {
                 ModelState.AddModelError("", "Sala jest zajęta w wybranym terminie. Sprawdź dostępność i wybierz inny termin.");
                 return Page();
             }
 
-            // Create screening
             var result = await _adminService.CreateScreeningAsync(ScreeningData);
 
             if (result)
@@ -96,24 +89,20 @@ namespace MultikinoWeb.Pages.Admin.Screenings
             return Page();
         }
 
-        // AJAX endpoint for checking availability
         public async Task<IActionResult> OnGetCheckAvailabilityAsync(int movieId, int hallId, DateTime startTime)
         {
             try
             {
-                // Sprawdź czy parametry są prawidłowe
                 if (movieId <= 0 || hallId <= 0)
                 {
                     return new JsonResult(new { available = false, message = "Nieprawidłowe dane wejściowe." });
                 }
 
-                // Sprawdź czy data nie jest w przeszłości
                 if (startTime <= DateTime.Now.AddMinutes(30))
                 {
                     return new JsonResult(new { available = false, message = "Seans musi rozpocząć się przynajmniej 30 minut od teraz." });
                 }
 
-                // Pobierz film i salę
                 var movie = await _context.Movies.FindAsync(movieId);
                 var hall = await _context.CinemaHalls.FindAsync(hallId);
 
@@ -137,10 +126,8 @@ namespace MultikinoWeb.Pages.Admin.Screenings
                     return new JsonResult(new { available = false, message = "Wybrana sala nie jest aktywna." });
                 }
 
-                // Oblicz czas zakończenia
                 var endTime = startTime.AddMinutes(movie.Duration + 30);
 
-                // Sprawdź dostępność sali
                 var isAvailable = await _adminService.IsHallAvailableAsync(hallId, startTime, endTime);
 
                 if (isAvailable)
@@ -153,7 +140,6 @@ namespace MultikinoWeb.Pages.Admin.Screenings
                 }
                 else
                 {
-                    // Znajdź konfliktujący seans
                     var conflictingScreening = await _context.Screenings
                         .Include(s => s.Movie)
                         .Where(s => s.HallId == hallId)
@@ -172,7 +158,6 @@ namespace MultikinoWeb.Pages.Admin.Screenings
             }
             catch (Exception ex)
             {
-                // Loguj błąd w rzeczywistej aplikacji
                 return new JsonResult(new { available = false, message = "Wystąpił błąd podczas sprawdzania dostępności. Spróbuj ponownie." });
             }
         }

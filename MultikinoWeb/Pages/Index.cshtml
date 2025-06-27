@@ -4,10 +4,10 @@
     ViewData["Title"] = "Strona główna";
 }
 
-<!-- Animated Particles Background -->
+
 <div id="particles-bg"></div>
 
-<!-- Hero Section z animowanymi cząsteczkami -->
+
 <div class="hero-section p-5 mb-5 fade-in-up">
     <div class="hero-particles"></div>
     <div class="row align-items-center position-relative">
@@ -29,7 +29,7 @@
     </div>
 </div>
 
-<!-- Statystyki z licznikami -->
+
 <div class="row mb-5 fade-in-up">
     <div class="col-md-3 text-center mb-3">
         <div class="card h-100">
@@ -70,7 +70,7 @@
                 <div class="feature-icon">
                     <i class="fas fa-star"></i>
                 </div>
-                <!-- Znajdź sekcję z stat-counter i zmień: -->
+                
                 <div class="stat-counter" data-count="@Model.AverageRating">0</div>
                 <p class="text-muted">Średnia ocena filmów</p>
             </div>
@@ -78,7 +78,7 @@
     </div>
 </div>
 
-<!-- Najbliższe seanse -->
+
 @if (Model.TodayScreenings.Any())
 {
     <div class="row mb-5">
@@ -147,7 +147,7 @@
     </div>
 }
 
-<!-- Popularne filmy tego tygodnia -->
+
 <div class="row mb-5">
     <div class="col-12">
         <h2 class="section-title text-center fade-in-up">
@@ -197,7 +197,7 @@
     }
 </div>
 
-<!-- Nasze sale -->
+
 <div class="row mb-5">
     <div class="col-12">
         <h2 class="section-title text-center fade-in-up">
@@ -227,7 +227,7 @@
     }
 </div>
 
-<!-- Newsletter -->
+
 <div class="newsletter-section p-5 rounded-3 text-center mb-5 fade-in-up">
     <h3 class="mb-3 text-white">
         <i class="fas fa-envelope me-2"></i>Bądź na bieżąco!
@@ -243,7 +243,7 @@
     </div>
 </div>
 
-<!-- Korzyści -->
+
 <div class="row mb-5">
     <div class="col-12">
         <h2 class="section-title text-center fade-in-up">
@@ -287,7 +287,6 @@
 
 @section Scripts {
     <script>
-        // Particles animation
         function createParticles() {
             const particlesContainer = document.getElementById('particles-bg');
             const particleTypes = ['bubble', 'star', 'film-reel'];
@@ -304,7 +303,6 @@
                     
                     particlesContainer.appendChild(particle);
                     
-                    // Remove particle after animation
                     setTimeout(() => {
                         if (particle.parentNode) {
                             particle.parentNode.removeChild(particle);
@@ -314,7 +312,6 @@
             }, 2000);
         }
 
-        // Hero particles
         function createHeroParticles() {
             const heroContainer = document.querySelector('.hero-particles');
             
@@ -330,7 +327,6 @@
             }
         }
 
-        // Counter animation
         function animateCounters() {
             const counters = document.querySelectorAll('.stat-counter');
             
@@ -347,7 +343,6 @@
                                                     if (current < target) {
                                                         current += increment;
 
-                                                        // ZMIANA: Sprawdź czy liczba jest całkowita zamiast czy > 100
                                                         const isInteger = Number.isInteger(target);
 
                                                         if (isInteger) {
@@ -357,7 +352,6 @@
                                                         }
                                                         requestAnimationFrame(updateCounter);
                                                     } else {
-                                                        // ZMIANA: Również w końcowej wartości
                                                         const isInteger = Number.isInteger(target);
 
                                                         if (isInteger) {
@@ -377,7 +371,6 @@
             counters.forEach(counter => observer.observe(counter));
         }
 
-        // Intersection Observer for animations
         function setupAnimations() {
             const animatedElements = document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right');
             
@@ -395,7 +388,6 @@
             });
         }
 
-        // Newsletter subscription
         function subscribeNewsletter() {
             const email = document.getElementById('newsletterEmail').value;
             if (email && email.includes('@@')) {
@@ -406,14 +398,12 @@
             }
         }
 
-        // Initialize everything
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             createHeroParticles();
             animateCounters();
             setupAnimations();
             
-            // Add click effects to screening times
             document.querySelectorAll('.screening-time').forEach(time => {
                 time.addEventListener('click', function() {
                     this.style.transform = 'scale(0.95)';
@@ -427,7 +417,6 @@
             });
         });
 
-        // Parallax effect for hero section
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;
             const heroParticles = document.querySelectorAll('.hero-particle');

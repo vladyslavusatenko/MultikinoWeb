@@ -86,11 +86,9 @@ namespace MultikinoWeb.Services
             if (user == null || !user.IsActive)
                 return false;
 
-            // Verify current password
             if (!VerifyPassword(model.CurrentPassword, user.PasswordHash))
                 return false;
 
-            // Update password
             user.PasswordHash = HashPassword(model.NewPassword);
 
             return await _context.SaveChangesAsync() > 0;

@@ -15,7 +15,6 @@ namespace MultikinoWeb.ViewModels
         [Required(ErrorMessage = "Musisz wybrać przynajmniej jedno miejsce")]
         public string SelectedSeats { get; set; } = string.Empty;
 
-        // Dane tylko do wyświetlenia (nie walidowane)
         public decimal TicketPrice { get; set; }
         public string MovieTitle { get; set; } = string.Empty;
         public string HallName { get; set; } = string.Empty;

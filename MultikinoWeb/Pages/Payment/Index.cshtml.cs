@@ -26,14 +26,12 @@ namespace MultikinoWeb.Pages.Payment
                 return RedirectToPage("/Account/Login");
             }
 
-            // DEBUGOWANIE - sprawdź co mamy w sesji
             var pendingBookingJson = HttpContext.Session.GetString("PendingBooking");
             Console.WriteLine($"=== PAYMENT DEBUG ===");
             Console.WriteLine($"BookingId parameter: {bookingId}");
             Console.WriteLine($"Session data: {pendingBookingJson}");
             Console.WriteLine($"Session data is null/empty: {string.IsNullOrEmpty(pendingBookingJson)}");
 
-            // Jeśli podano bookingId - stary sposób (dla istniejących rezerwacji)
             if (bookingId.HasValue)
             {
                 var booking = await _bookingService.GetBookingByIdAsync(bookingId.Value);
@@ -54,7 +52,6 @@ namespace MultikinoWeb.Pages.Payment
                 return Page();
             }
 
-            // Jeśli nie podano bookingId - nowy sposób (z sesji)
             if (string.IsNullOrEmpty(pendingBookingJson))
             {
                 Console.WriteLine("ERROR: No session data found");
@@ -112,7 +109,6 @@ namespace MultikinoWeb.Pages.Payment
                         return Page();
                     }
 
-                    // PROSTA WALIDACJA PO STRONIE SERWERA
                     var validationError = ValidatePaymentSimple();
                     if (!string.IsNullOrEmpty(validationError))
                     {
@@ -120,10 +116,8 @@ namespace MultikinoWeb.Pages.Payment
                         return Page();
                     }
 
-                    // Symuluj czas przetwarzania
                     await Task.Delay(2000);
 
-                    // Losowa szansa na błąd płatności (10% dla realizmu)
                     if (new Random().NextDouble() < 0.10)
                     {
                         var errors = Payment.PaymentMethod switch
@@ -151,7 +145,6 @@ namespace MultikinoWeb.Pages.Payment
                         return Page();
                     }
 
-                    // Płatność udana - utwórz rezerwację
                     var bookingId = await _bookingService.CreatePaidBookingAsync(pendingBookingJson);
 
                     if (bookingId.HasValue)
@@ -183,17 +176,14 @@ namespace MultikinoWeb.Pages.Payment
             }
             else
             {
-                // STARY PRZEPŁYW
                 await Task.Delay(2000);
                 TempData["SuccessMessage"] = "Płatność została przetworzona pomyślnie!";
                 return RedirectToPage("/Bookings/MyBookings");
             }
         }
 
-        // PROSTA WALIDACJA - sprawdza tylko podstawowe rzeczy
         private string ValidatePaymentSimple()
         {
-            // Losowa szansa na błąd walidacji (5%)
             if (new Random().NextDouble() < 0.05)
             {
                 return Payment.PaymentMethod switch

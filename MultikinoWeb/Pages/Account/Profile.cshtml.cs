@@ -41,12 +41,10 @@ namespace MultikinoWeb.Pages.Account
                 return NotFound();
             }
 
-            // Załaduj dane do formularza
             ProfileData.FirstName = User.FirstName;
             ProfileData.LastName = User.LastName;
             ProfileData.Email = User.Email;
 
-            // Oblicz statystyki
             var bookings = await _context.Bookings
                 .Where(b => b.UserId == userId && b.Status == "Confirmed")
                 .ToListAsync();
@@ -77,14 +75,12 @@ namespace MultikinoWeb.Pages.Account
                 return Page();
             }
 
-            // Zaktualizuj dane użytkownika
             User.FirstName = ProfileData.FirstName;
             User.LastName = ProfileData.LastName;
 
             var result = await _userService.UpdateUserAsync(User);
             if (result)
             {
-                // Zaktualizuj sesję
                 HttpContext.Session.SetString("UserName", $"{User.FirstName} {User.LastName}");
                 TempData["SuccessMessage"] = "Profil został zaktualizowany pomyślnie!";
                 return RedirectToPage();

@@ -13,7 +13,7 @@
     </a>
 </div>
 
-<!-- Filtry -->
+
 <div class="card mb-4">
     <div class="card-body">
         <form method="get" class="row g-3">
@@ -48,7 +48,7 @@
     </div>
 </div>
 
-<!-- Lista filmów -->
+
 <div class="card">
     <div class="card-body">
         @if (Model.Movies.Any())
@@ -113,7 +113,7 @@
                                 <td>
                                     <span class="badge bg-info">@movie.Screenings.Count() seansów</span>
                                 </td>
-                                <!-- Znajdź sekcję <td> z akcjami i zamień na: -->
+                                
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a asp-page="/Movies/Details" asp-route-id="@movie.MovieId"

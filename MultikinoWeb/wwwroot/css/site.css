@@ -496,7 +496,7 @@ small.text-muted {
     }
 
 .price-display {
-    background: linear-gradient(135deg, var(--lapis-lazuli) 0%, var(--lapis-lazuli-light) 100%);
+/*    background: linear-gradient(135deg, var(--lapis-lazuli) 0%, var(--lapis-lazuli-light) 100%);*/
     color: white !important;
     padding: 15px;
     border-radius: 10px;

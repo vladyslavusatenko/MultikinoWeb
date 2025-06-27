@@ -51,7 +51,6 @@ namespace MultikinoWeb.Services
                     .CountAsync(s => s.StartTime > DateTime.Now)
             };
 
-            // Recent bookings
             dashboard.RecentBookings = await _context.Bookings
                 .Include(b => b.User)
                 .Include(b => b.Screening)
@@ -60,7 +59,6 @@ namespace MultikinoWeb.Services
                 .Take(10)
                 .ToListAsync();
 
-            // Popular movies
             dashboard.PopularMovies = await _context.Bookings
                 .Where(b => b.BookingDate >= thisMonth && b.Status == "Confirmed")
                 .GroupBy(b => b.Screening.Movie)
@@ -115,7 +113,6 @@ namespace MultikinoWeb.Services
             var hall = await _context.CinemaHalls.FindAsync(id);
             if (hall != null)
             {
-                // Check if hall has future screenings
                 var hasFutureScreenings = await _context.Screenings
                     .AnyAsync(s => s.HallId == id && s.StartTime > DateTime.Now);
 
@@ -155,7 +152,6 @@ namespace MultikinoWeb.Services
 
             var endTime = model.StartTime.AddMinutes(movie.Duration + 30); // 30 min break
 
-            // Check hall availability
             if (!await IsHallAvailableAsync(model.HallId, model.StartTime, endTime))
                 return false;
 
@@ -193,7 +189,6 @@ namespace MultikinoWeb.Services
 
             if (screening != null)
             {
-                // Check if screening has confirmed bookings
                 var hasConfirmedBookings = screening.Bookings.Any(b => b.Status == "Confirmed");
                 if (hasConfirmedBookings)
                     return false;
@@ -329,7 +324,6 @@ namespace MultikinoWeb.Services
 
         public async Task<SystemSettingsViewModel> GetSystemSettingsAsync()
         {
-            // This would typically come from a Settings table or configuration
             return new SystemSettingsViewModel
             {
                 CinemaName = "Multikino",
@@ -344,8 +338,6 @@ namespace MultikinoWeb.Services
 
         public async Task<bool> UpdateSystemSettingsAsync(SystemSettingsViewModel model)
         {
-            // Implementation would save to settings table or configuration
-            // For now, just return true
             return true;
         }
     }

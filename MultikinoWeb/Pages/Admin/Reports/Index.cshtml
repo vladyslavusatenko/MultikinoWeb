@@ -8,7 +8,7 @@
 
 <h2><i class="fas fa-chart-bar me-2"></i>Raporty i statystyki</h2>
 
-<!-- Filtry czasowe -->
+
 <div class="card mb-4">
     <div class="card-header">
         <h5><i class="fas fa-calendar-alt me-2"></i>Okres raportowania</h5>
@@ -42,7 +42,7 @@
 
 @if (Model.RevenueReport != null)
 {
-    <!-- Podsumowanie finansowe -->
+    
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card bg-success text-white">
@@ -78,7 +78,7 @@
         </div>
     </div>
 
-    <!-- Wykresy -->
+    
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="card">
@@ -102,7 +102,7 @@
         </div>
     </div>
 
-    <!-- Tabele szczegółowe -->
+    
     <div class="row">
         <div class="col-md-6">
             <div class="card">
@@ -171,7 +171,6 @@
     @if (Model.RevenueReport != null)
     {
         <script>
-            // Color palette for charts
             const chartColors = {
                 paynesGray: '#4f6d7a',
                 columbiaBlue: '#c0d6df',
@@ -183,7 +182,6 @@
                 lapisLazuliLight: '#1f7ba8'
             };
 
-            // Wykres przychodów dziennych
             const dailyCtx = document.getElementById('dailyRevenueChart').getContext('2d');
             new Chart(dailyCtx, {
                 type: 'line',
@@ -243,7 +241,6 @@
                 }
             });
 
-            // Wykres przychodów według sal
             const hallCtx = document.getElementById('hallRevenueChart').getContext('2d');
             const hallChartColors = [
                 chartColors.lapisLazuli,
@@ -305,7 +302,6 @@
                 }
             });
 
-            // Add hover effects to charts
             const charts = document.querySelectorAll('canvas');
             charts.forEach(chart => {
                 chart.addEventListener('mouseenter', function() {
@@ -317,7 +313,6 @@
                 });
             });
 
-            // Add chart animation on scroll
             const observerOptions = {
                 threshold: 0.5,
                 rootMargin: '0px 0px -50px 0px'

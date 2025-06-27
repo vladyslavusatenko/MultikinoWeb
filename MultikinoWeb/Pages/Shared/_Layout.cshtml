@@ -13,7 +13,7 @@
     <header style="position: relative; z-index: 1030;">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
             <div class="container-fluid" style="justify-content: flex-start !important;">
-                <!-- Logo po lewej -->
+                
                 <a class="navbar-brand" asp-page="/Index" style="margin-right: 2rem;">
                     <i class="fas fa-film me-2"></i>Multikino
                 </a>
@@ -24,7 +24,7 @@
                 </button>
 
                 <div class="navbar-collapse collapse d-sm-inline-flex" style="justify-content: space-between !important;">
-                    <!-- Menu główne po lewej -->
+                    
                     <ul class="navbar-nav" style="flex-direction: row; margin-right: auto;">
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-page="/Index">
@@ -75,7 +75,7 @@
                         }
                     </ul>
 
-                    <!-- Menu użytkownika po prawej -->
+                    
                     <ul class="navbar-nav" style="flex-direction: row;">
                         @if (Context.Session.GetString("UserId") != null)
                         {
@@ -124,7 +124,7 @@
         </nav>
     </header>
 
-    <!-- Alert container with high z-index -->
+    
     <div id="alert-container" style="position: relative; z-index: 10100;">
         <div class="container">
             @if (TempData["SuccessMessage"] != null)
@@ -178,14 +178,12 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <!-- Improved Bootstrap dropdown initialization -->
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Ensure all dropdowns work properly with correct z-index
             const dropdowns = document.querySelectorAll('.dropdown');
             dropdowns.forEach(dropdown => {
                 dropdown.addEventListener('show.bs.dropdown', function () {
-                    // Ensure dropdown appears above all other elements
                     const menu = this.querySelector('.dropdown-menu');
                     if (menu) {
                         menu.style.zIndex = '10001';
@@ -194,7 +192,6 @@
                 });
 
                 dropdown.addEventListener('hide.bs.dropdown', function () {
-                    // Reset z-index when hiding
                     const menu = this.querySelector('.dropdown-menu');
                     if (menu) {
                         menu.style.zIndex = '';
@@ -202,7 +199,6 @@
                 });
             });
 
-            // Auto-hide alerts after 5 seconds
             const alerts = document.querySelectorAll('.alert:not(.alert-persistent)');
             alerts.forEach(alert => {
                 setTimeout(() => {
@@ -215,7 +211,6 @@
                 }, 5000);
             });
 
-            // Enhanced navbar toggler for mobile
             const navbarToggler = document.querySelector('.navbar-toggler');
             const navbarCollapse = document.querySelector('.navbar-collapse');
 
@@ -225,7 +220,6 @@
                     this.setAttribute('aria-expanded', !isExpanded);
                 });
 
-                // Close mobile menu when clicking outside
                 document.addEventListener('click', function(event) {
                     if (!navbarCollapse.contains(event.target) && !navbarToggler.contains(event.target)) {
                         if (navbarCollapse.classList.contains('show')) {
@@ -238,7 +232,6 @@
                 });
             }
 
-            // Fix dropdown positioning on mobile
             if (window.innerWidth <= 768) {
                 const dropdownMenus = document.querySelectorAll('.dropdown-menu');
                 dropdownMenus.forEach(menu => {
@@ -252,7 +245,6 @@
             }
         });
 
-        // Global function for showing alerts
         function showAlert(message, type = 'info') {
             const alertContainer = document.getElementById('alert-container') || document.querySelector('.container');
             const alertDiv = document.createElement('div');
@@ -266,7 +258,6 @@
 
             alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
 
-            // Auto-hide after 5 seconds
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     const bsAlert = new bootstrap.Alert(alertDiv);
@@ -277,7 +268,6 @@
             }, 5000);
         }
 
-        // Connection status checker
         function checkConnectionStatus() {
             const statusElement = document.querySelector('.badge');
             if (statusElement && statusElement.textContent.includes('Połączono')) {
@@ -291,7 +281,6 @@
             }
         }
 
-        // Check connection status on load and when connection changes
         window.addEventListener('load', checkConnectionStatus);
         window.addEventListener('online', checkConnectionStatus);
         window.addEventListener('offline', checkConnectionStatus);

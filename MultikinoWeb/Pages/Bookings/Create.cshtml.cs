@@ -24,12 +24,10 @@ namespace MultikinoWeb.Pages.Bookings
 
         public Screening? Screening { get; set; }
 
-        // NOWA WŁAŚCIWOŚĆ - Lista zajętych miejsc
         public List<string> OccupiedSeats { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int screeningId)
         {
-            // WYCZYŚĆ EWENTUALNE STARE DANE Z SESJI
             HttpContext.Session.Remove("PendingBooking");
 
             Screening = await _context.Screenings
@@ -42,14 +40,12 @@ namespace MultikinoWeb.Pages.Bookings
                 return NotFound();
             }
 
-            // SPRAWDŹ CZY SEANS JESZCZE SIĘ NIE ROZPOCZĄŁ
             if (Screening.StartTime <= DateTime.Now.AddMinutes(30)) // 30 min przed rozpoczęciem
             {
                 TempData["ErrorMessage"] = "Rezerwacja nie jest już możliwa - seans rozpoczyna się za mniej niż 30 minut.";
                 return RedirectToPage("/Movies/Details", new { id = Screening.MovieId });
             }
 
-            // POBIERZ RZECZYWISTE ZAJĘTE MIEJSCA Z BAZY DANYCH
             OccupiedSeats = await _bookingService.GetOccupiedSeatsAsync(screeningId);
 
             BookingData.ScreeningId = screeningId;
@@ -61,7 +57,6 @@ namespace MultikinoWeb.Pages.Bookings
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // Pobierz ponownie screening i zajęte miejsca
             Screening = await _context.Screenings
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
@@ -72,10 +67,8 @@ namespace MultikinoWeb.Pages.Bookings
                 return NotFound();
             }
 
-            // Pobierz zajęte miejsca
             OccupiedSeats = await _bookingService.GetOccupiedSeatsAsync(BookingData.ScreeningId);
 
-            // Sprawdź czy użytkownik jest zalogowany
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
@@ -88,14 +81,12 @@ namespace MultikinoWeb.Pages.Bookings
                 return Page();
             }
 
-            // Sprawdź dostępność miejsc
             if (Screening.AvailableSeats < BookingData.NumberOfTickets)
             {
                 ModelState.AddModelError("", "Brak wystarczającej liczby dostępnych miejsc.");
                 return Page();
             }
 
-            // Sprawdź czy wybrane miejsca nie są już zajęte
             var selectedSeats = BookingData.SelectedSeats.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var conflictingSeats = selectedSeats.Intersect(OccupiedSeats).ToList();
 
@@ -105,10 +96,8 @@ namespace MultikinoWeb.Pages.Bookings
                 return Page();
             }
 
-            // NOWY PRZEPŁYW: Sprawdź metodę płatności
             if (BookingData.PaymentMethod == "Cash")
             {
-                // Dla gotówki - stwórz rezerwację od razu z odpowiednim statusem
                 var result = await _bookingService.CreateCashBookingAsync(BookingData, userId.Value);
 
                 if (result)
@@ -124,10 +113,8 @@ namespace MultikinoWeb.Pages.Bookings
             }
             else
             {
-                // Dla innych metod płatności - zapisz dane w sesji i przekieruj do płatności
                 try
                 {
-                    // Zapisz dane rezerwacji w sesji
                     var bookingSession = new
                     {
                         ScreeningId = BookingData.ScreeningId,
@@ -141,7 +128,6 @@ namespace MultikinoWeb.Pages.Bookings
                         StartTime = Screening.StartTime.ToString("yyyy-MM-dd HH:mm:ss") // Sformatuj datę jako string
                     };
 
-                    // Zapisz w sesji jako JSON
                     var jsonString = System.Text.Json.JsonSerializer.Serialize(bookingSession);
                     HttpContext.Session.SetString("PendingBooking", jsonString);
 
@@ -156,7 +142,6 @@ namespace MultikinoWeb.Pages.Bookings
             }
         }
 
-        // NOWA METODA API - Pobieranie zajętych miejsc przez AJAX
         public async Task<IActionResult> OnGetOccupiedSeatsAsync(int screeningId)
         {
             var occupiedSeats = await _bookingService.GetOccupiedSeatsAsync(screeningId);

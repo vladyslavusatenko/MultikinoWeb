@@ -1,28 +1,22 @@
-﻿// Improved Multikino JavaScript with new color palette
-
-// Color palette constants
+﻿
 const COLORS = {
     paynesGray: '#4f6d7a',
     columbiaBlue: '#c0d6df',
     aliceBlue: '#dbe9ee',
     trueBlue: '#4a6fa5',
     lapisLazuli: '#166088',
-    // Shades
     paynesGrayLight: '#6b8490',
     paynesGrayDark: '#3d5560',
     trueBlueDark: '#3a5a85',
     lapisLazuliLight: '#1f7ba8'
 };
 
-// Ensure dropdowns work properly
 document.addEventListener('DOMContentLoaded', function () {
-    // Fix dropdown z-index issues
     const dropdowns = document.querySelectorAll('.dropdown-menu');
     dropdowns.forEach(dropdown => {
         dropdown.style.zIndex = '1055';
     });
 
-    // Auto-hide alerts after 5 seconds
     const alerts = document.querySelectorAll('.alert:not(.alert-persistent)');
     alerts.forEach(alert => {
         setTimeout(() => {
@@ -33,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 5000);
     });
 
-    // Smooth scroll for anchor links
     const anchorLinks = document.querySelectorAll('a[href^="#"]');
     anchorLinks.forEach(link => {
         link.addEventListener('click', function (e) {
@@ -48,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Confirm dialogs for delete/cancel actions
     const dangerousActions = document.querySelectorAll('[data-confirm]');
     dangerousActions.forEach(element => {
         element.addEventListener('click', function (e) {
@@ -59,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Loading states for forms
+   
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         form.addEventListener('submit', function () {
@@ -69,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="loading me-2"></span>Przetwarzanie...';
 
-                // Restore button after 10 seconds (fallback)
+
                 setTimeout(() => {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
@@ -78,27 +70,26 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Tooltips initialization (if Bootstrap tooltips are used)
+
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Card hover effects enhancement
+
     const cards = document.querySelectorAll('.card');
     cards.forEach(card => {
         card.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = `0 8px 25px ${COLORS.paynesGray}33`; // 33 = 20% opacity
+            this.style.boxShadow = `0 8px 25px ${COLORS.paynesGray}33`;
         });
 
         card.addEventListener('mouseleave', function () {
             this.style.transform = 'translateY(0)';
-            this.style.boxShadow = `0 4px 6px ${COLORS.paynesGray}1A`; // 1A = 10% opacity
+            this.style.boxShadow = `0 4px 6px ${COLORS.paynesGray}1A`;
         });
     });
 
-    // Navigation active state
     const currentLocation = location.pathname;
     const menuItems = document.querySelectorAll('.navbar-nav .nav-link');
     menuItems.forEach(item => {
@@ -109,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Dynamic countdown for booking cancellation
     const countdownElements = document.querySelectorAll('[data-countdown]');
     countdownElements.forEach(element => {
         const targetTime = new Date(element.getAttribute('data-countdown')).getTime();
@@ -131,10 +121,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         updateCountdown();
-        setInterval(updateCountdown, 60000); // Update every minute
+        setInterval(updateCountdown, 60000); 
     });
 
-    // Print functionality
     const printButtons = document.querySelectorAll('[onclick*="print"]');
     printButtons.forEach(button => {
         button.addEventListener('click', function (e) {
@@ -143,13 +132,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Seat selection functionality (if on booking page)
+
     if (typeof toggleSeat === 'function') {
-        // Seat selection is handled in the booking page specific script
         console.log('Seat selection functionality loaded');
     }
 
-    // Dynamic search functionality
+
     const searchInputs = document.querySelectorAll('input[type="search"], input[name*="search"]');
     searchInputs.forEach(input => {
         let timeout;
@@ -159,14 +147,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (searchTerm.length >= 2) {
                 timeout = setTimeout(() => {
-                    // You can implement live search here
                     console.log('Searching for:', searchTerm);
                 }, 500);
             }
         });
     });
 
-    // Image lazy loading fallback
+
     const images = document.querySelectorAll('img');
     images.forEach(img => {
         img.addEventListener('error', function () {
@@ -177,7 +164,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Mobile menu improvements
     const navbarToggler = document.querySelector('.navbar-toggler');
     if (navbarToggler) {
         navbarToggler.addEventListener('click', function () {
@@ -186,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Connection status checker
+
     function checkConnectionStatus() {
         const statusElement = document.querySelector('.badge:contains("Połączono")');
         if (statusElement) {
@@ -201,12 +187,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Check connection status on load and periodically
     checkConnectionStatus();
     window.addEventListener('online', checkConnectionStatus);
     window.addEventListener('offline', checkConnectionStatus);
 
-    // Form validation improvements
     const formControls = document.querySelectorAll('.form-control');
     formControls.forEach(control => {
         control.addEventListener('invalid', function () {
@@ -226,10 +210,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Apply focus styles with new colors
+
         control.addEventListener('focus', function () {
             this.style.borderColor = COLORS.trueBlue;
-            this.style.boxShadow = `0 0 0 0.2rem ${COLORS.trueBlue}40`; // 40 = 25% opacity
+            this.style.boxShadow = `0 0 0 0.2rem ${COLORS.trueBlue}40`;
         });
 
         control.addEventListener('blur', function () {
@@ -241,12 +225,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Global functions for backward compatibility
+
 function showAlert(message, type = 'info') {
     const alertContainer = document.querySelector('main') || document.body;
     const alertDiv = document.createElement('div');
 
-    // Map alert types to new color scheme
+
     const alertColors = {
         'success': COLORS.lapisLazuli,
         'danger': '#dc3545',
@@ -262,7 +246,7 @@ function showAlert(message, type = 'info') {
     };
 
     alertDiv.className = `alert alert-${type} alert-dismissible fade show temp-alert`;
-    alertDiv.style.zIndex = '1065'; // Higher than dropdown
+    alertDiv.style.zIndex = '1065'; 
     alertDiv.style.borderLeftColor = alertColors[type] || COLORS.trueBlue;
     alertDiv.innerHTML = `
         <i class="fas fa-${iconMap[type] || 'info-circle'} me-2"></i>
@@ -272,7 +256,7 @@ function showAlert(message, type = 'info') {
 
     alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
 
-    // Auto-hide after 5 seconds
+
     setTimeout(() => {
         if (alertDiv.parentNode) {
             const bsAlert = new bootstrap.Alert(alertDiv);
@@ -281,7 +265,7 @@ function showAlert(message, type = 'info') {
     }, 5000);
 }
 
-// Utility function for formatting currency
+
 function formatCurrency(amount) {
     return new Intl.NumberFormat('pl-PL', {
         style: 'currency',
@@ -289,7 +273,6 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
-// Utility function for formatting dates
 function formatDate(date, options = {}) {
     const defaultOptions = {
         year: 'numeric',
@@ -302,9 +285,7 @@ function formatDate(date, options = {}) {
     return new Intl.DateTimeFormat('pl-PL', { ...defaultOptions, ...options }).format(new Date(date));
 }
 
-// Function to apply color theme to dynamically created elements
 function applyColorTheme(element) {
-    // Apply new color theme to buttons
     const primaryButtons = element.querySelectorAll('.btn-primary');
     primaryButtons.forEach(btn => {
         btn.style.background = `linear-gradient(135deg, ${COLORS.trueBlue} 0%, ${COLORS.trueBlueDark} 100%)`;
@@ -315,20 +296,20 @@ function applyColorTheme(element) {
         btn.style.background = `linear-gradient(135deg, ${COLORS.lapisLazuli} 0%, ${COLORS.lapisLazuliDark} 100%)`;
     });
 
-    // Apply theme to cards
+
     const cards = element.querySelectorAll('.card');
     cards.forEach(card => {
         card.style.boxShadow = `0 4px 6px ${COLORS.paynesGray}1A`;
     });
 
-    // Apply theme to form controls
+
     const formControls = element.querySelectorAll('.form-control');
     formControls.forEach(control => {
         control.style.borderColor = COLORS.columbiaBlue;
     });
 }
 
-// Enhanced button click effects with new colors
+
 function addButtonEffects() {
     const buttons = document.querySelectorAll('.btn');
     buttons.forEach(button => {
@@ -346,22 +327,19 @@ function addButtonEffects() {
     });
 }
 
-// Initialize button effects when DOM is ready
+
 document.addEventListener('DOMContentLoaded', addButtonEffects);
 
-// Debug mode (only in development)
 if (window.location.hostname === 'localhost') {
     console.log('Multikino Debug Mode Active');
     console.log('Color Palette:', COLORS);
 
-    // Add debug info to console
     console.log('User Session:', {
         isLoggedIn: document.querySelector('.navbar .dropdown-toggle') !== null,
         currentPage: location.pathname
     });
 }
 
-// Export colors for use in other scripts
 window.MULTIKINO_COLORS = COLORS;
 
 
@@ -371,7 +349,6 @@ window.MULTIKINO_COLORS = COLORS;
  */
 
 class MultikinoParticles {
-    // Znajdź constructor i zmień maxParticles:
     constructor() {
         this.particlesContainer = null;
         this.heroContainer = null;
@@ -379,12 +356,10 @@ class MultikinoParticles {
         this.maxParticles = 25; // ZMIANA: było 15, teraz 25
         this.particleCreationInterval = 1500; // ZMIANA: było 2000, teraz 1500
         this.heroParticleCount = 30; // ZMIANA: było 20, teraz 30
-        // reszta bez zmian...
     
         this.isInitialized = false;
         this.animationId = null;
 
-        // Performance settings
         this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         this.isMobile = window.innerWidth <= 768;
 
@@ -404,7 +379,6 @@ class MultikinoParticles {
     }
 
     createContainers() {
-        // Create main particles container if it doesn't exist
         if (!document.getElementById('particles-bg')) {
             this.particlesContainer = document.createElement('div');
             this.particlesContainer.id = 'particles-bg';
@@ -413,7 +387,6 @@ class MultikinoParticles {
             this.particlesContainer = document.getElementById('particles-bg');
         }
 
-        // Find or create hero particles container
         const heroSection = document.querySelector('.hero-section');
         if (heroSection) {
             this.heroContainer = heroSection.querySelector('.hero-particles');
@@ -439,7 +412,6 @@ class MultikinoParticles {
             particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
             particle.style.animationDelay = Math.random() * 2 + 's';
 
-            // Add special properties for different particle types
             if (type === 'film-reel') {
                 particle.style.fontSize = '0.8rem';
                 particle.innerHTML = '🎬';
@@ -453,7 +425,6 @@ class MultikinoParticles {
 
             this.particlesContainer.appendChild(particle);
 
-            // Remove particle after animation completes
             setTimeout(() => {
                 if (particle.parentNode) {
                     particle.parentNode.removeChild(particle);
@@ -461,10 +432,8 @@ class MultikinoParticles {
             }, 25000);
         };
 
-        // Create particles at intervals
         this.particleInterval = setInterval(createParticle, this.particleCreationInterval);
 
-        // Create initial batch
         for (let i = 0; i < 3; i++) {
             setTimeout(createParticle, i * 500);
         }
@@ -473,7 +442,6 @@ class MultikinoParticles {
     createHeroParticles() {
         if (!this.heroContainer) return;
 
-        // Clear existing particles
         this.heroContainer.innerHTML = '';
 
         const particleCount = this.isMobile ? 10 : this.heroParticleCount;
@@ -486,7 +454,6 @@ class MultikinoParticles {
             particle.style.animationDelay = Math.random() * 8 + 's';
             particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
 
-            // Add occasional larger particles
             if (Math.random() > 0.8) {
                 particle.style.width = '6px';
                 particle.style.height = '6px';
@@ -498,7 +465,6 @@ class MultikinoParticles {
     }
 
     setupEventListeners() {
-        // Parallax effect for hero particles
         let ticking = false;
 
         const updateParallax = () => {
@@ -524,17 +490,14 @@ class MultikinoParticles {
 
         window.addEventListener('scroll', requestParallaxUpdate, { passive: true });
 
-        // Handle resize events
         window.addEventListener('resize', () => {
             this.handleResize();
         });
 
-        // Handle visibility change to pause/resume animations
         document.addEventListener('visibilitychange', () => {
             this.handleVisibilityChange();
         });
 
-        // Handle reduced motion preference changes
         const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         motionQuery.addListener((e) => {
             if (e.matches) {
@@ -552,14 +515,11 @@ class MultikinoParticles {
             this.isMobile = newIsMobile;
 
             if (this.isMobile) {
-                // Remove particles on mobile for performance
                 this.removeAllParticles();
             } else {
-                // Recreate particles on desktop
                 this.createBackgroundParticles();
             }
 
-            // Recreate hero particles with appropriate count
             this.createHeroParticles();
         }
     }
@@ -612,7 +572,6 @@ class MultikinoParticles {
         particle.style.left = x + '%';
         particle.style.top = y + '%';
 
-        // Apply custom options
         if (options.duration) {
             particle.style.animationDuration = options.duration;
         }
@@ -662,7 +621,6 @@ class MultikinoParticles {
             cancelAnimationFrame(this.animationId);
         }
 
-        // Remove containers
         if (this.particlesContainer && this.particlesContainer.parentNode) {
             this.particlesContainer.parentNode.removeChild(this.particlesContainer);
         }
@@ -672,7 +630,6 @@ class MultikinoParticles {
     }
 }
 
-// Counter Animation Class
 class CounterAnimation {
     constructor() {
         this.observers = [];
@@ -708,7 +665,6 @@ class CounterAnimation {
         const increment = target / (duration / 16); // 60fps
         let current = 0;
 
-        // NOWA LOGIKA: Sprawdź czy liczba jest całkowita
         const isInteger = Number.isInteger(target);
 
         const updateCounter = () => {
@@ -716,16 +672,13 @@ class CounterAnimation {
                 current += increment;
 
                 if (isInteger) {
-                    // Dla liczb całkowitych - bez miejsc dziesiętnych
                     counter.textContent = Math.floor(current).toLocaleString();
                 } else {
-                    // Dla liczb z miejscami dziesiętnymi
                     counter.textContent = (Math.floor(current * 10) / 10).toFixed(1);
                 }
 
                 requestAnimationFrame(updateCounter);
             } else {
-                // Końcowa wartość
                 if (isInteger) {
                     counter.textContent = Math.floor(target).toLocaleString();
                 } else {
@@ -743,7 +696,6 @@ class CounterAnimation {
     }
 }
 
-// Page Animation Controller
 class PageAnimations {
     constructor() {
         this.observers = [];
@@ -777,12 +729,10 @@ class PageAnimations {
     }
 
     setupInteractiveElements() {
-        // Screening time click effects
         document.querySelectorAll('.screening-time').forEach(time => {
             time.addEventListener('click', this.createClickEffect.bind(this));
         });
 
-        // Card hover effects
         document.querySelectorAll('.movie-card').forEach(card => {
             card.addEventListener('mouseenter', this.enhanceCardHover.bind(this));
         });
@@ -799,7 +749,6 @@ class PageAnimations {
             }, 150);
         }, 150);
 
-        // Create burst effect if particles are available
         if (window.multikinoParticles) {
             const rect = element.getBoundingClientRect();
             const x = ((rect.left + rect.width / 2) / window.innerWidth) * 100;
@@ -812,7 +761,6 @@ class PageAnimations {
         const card = event.target.closest('.movie-card');
         if (!card) return;
 
-        // Add subtle glow effect
         card.style.boxShadow = '0 15px 40px rgba(74, 111, 165, 0.25), 0 0 0 1px rgba(74, 111, 165, 0.1)';
     }
 
@@ -822,18 +770,15 @@ class PageAnimations {
     }
 }
 
-// Newsletter functionality
 function subscribeNewsletter() {
     const email = document.getElementById('newsletterEmail');
     if (!email) return;
 
     const emailValue = email.value.trim();
     if (emailValue && emailValue.includes('@')) {
-        // Show success message
         showAlert('Dziękujemy za zapisanie się do newslettera!', 'success');
         email.value = '';
 
-        // Create celebration effect
         if (window.multikinoParticles) {
             window.multikinoParticles.createBurstEffect(50, 30, 8);
         }
@@ -842,9 +787,7 @@ function subscribeNewsletter() {
     }
 }
 
-// Global initialization
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize all systems
     try {
         window.multikinoParticles = new MultikinoParticles();
         window.counterAnimation = new CounterAnimation();
@@ -856,7 +799,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Cleanup on page unload
 window.addEventListener('beforeunload', function () {
     if (window.multikinoParticles) {
         window.multikinoParticles.destroy();
@@ -869,7 +811,6 @@ window.addEventListener('beforeunload', function () {
     }
 });
 
-// Export for external use
 window.MultikinoParticles = MultikinoParticles;
 window.CounterAnimation = CounterAnimation;
 window.PageAnimations = PageAnimations;

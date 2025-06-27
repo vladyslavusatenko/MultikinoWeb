@@ -16,7 +16,7 @@
 @if (Model.UserStats.User != null)
 {
     <div class="row">
-        <!-- Podstawowe informacje -->
+        
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
@@ -51,7 +51,7 @@
             </div>
         </div>
 
-        <!-- Statystyki -->
+        
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header bg-info text-white">
@@ -92,7 +92,7 @@
                 </div>
             </div>
 
-            <!-- Ostatnie rezerwacje -->
+            
             @if (Model.UserStats.RecentBookings.Any())
             {
                 <div class="card mt-4">

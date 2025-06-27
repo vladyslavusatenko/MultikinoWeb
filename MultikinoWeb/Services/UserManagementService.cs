@@ -60,7 +60,6 @@ namespace MultikinoWeb.Services
             if (user == null || user.Role == "Admin") return false;
 
             user.IsActive = false;
-            // Można dodać pole BanReason do modelu User
             await _context.SaveChangesAsync();
             return true;
         }
@@ -111,7 +110,6 @@ namespace MultikinoWeb.Services
 
             if (user == null || user.Role == "Admin") return false;
 
-            // Sprawdź czy ma aktywne rezerwacje
             var hasActiveBookings = user.Bookings.Any(b =>
                 b.Status == "Confirmed" && b.Screening.StartTime > DateTime.Now);
 

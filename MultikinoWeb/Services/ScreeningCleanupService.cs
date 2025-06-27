@@ -31,7 +31,6 @@ namespace MultikinoWeb.Services
                     {
                         booking.Status = "Completed"; // Nowy status
 
-                        // Oznacz bilety jako wykorzystane
                         foreach (var ticket in booking.Tickets)
                         {
                             ticket.IsUsed = true;

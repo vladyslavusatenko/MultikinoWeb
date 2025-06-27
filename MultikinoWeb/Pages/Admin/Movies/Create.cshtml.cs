@@ -31,7 +31,6 @@ namespace MultikinoWeb.Pages.Admin.Movies
                 return Page();
             }
 
-            // Validate poster file
             if (posterFile != null)
             {
                 if (posterFile.Length > 5 * 1024 * 1024) // 5MB limit
@@ -60,7 +59,6 @@ namespace MultikinoWeb.Pages.Admin.Movies
                 IsActive = true
             };
 
-            // Handle poster upload
             if (posterFile != null)
             {
                 using var memoryStream = new MemoryStream();

@@ -11,7 +11,7 @@
                 <h3><i class="fas fa-credit-card me-2"></i>Finalizacja płatności</h3>
             </div>
             <div class="card-body">
-                <!-- Podsumowanie rezerwacji -->
+                
                 <div class="alert alert-info">
                     <h5><i class="fas fa-info-circle me-2"></i>Podsumowanie rezerwacji</h5>
                     @if (ViewData["MovieTitle"] != null)
@@ -33,7 +33,7 @@
 
                 @if (!string.IsNullOrEmpty(Model.Payment.PaymentMethod))
                 {
-                    <!-- Alert o wybranej metodzie -->
+                    
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         <strong>Wybrana metoda płatności:</strong> 
@@ -48,10 +48,10 @@
                     <input type="hidden" asp-for="Payment.Amount" />
                     <input type="hidden" asp-for="Payment.PaymentMethod" />
 
-                    <!-- Symulacja różnych metod płatności z walidacją -->
+                    
                     @if (Model.Payment.PaymentMethod == "Card" || string.IsNullOrEmpty(Model.Payment.PaymentMethod))
                     {
-                        <!-- Prosty formularz karty -->
+                        
                         <div id="cardForm" class="payment-form" style="display: @(Model.Payment.PaymentMethod == "Card" ? "block" : "none");">
                             <h5><i class="fas fa-credit-card me-2"></i>Dane karty płatniczej</h5>
 
@@ -83,7 +83,7 @@
 
                     @if (Model.Payment.PaymentMethod == "BLIK" || string.IsNullOrEmpty(Model.Payment.PaymentMethod))
                     {
-                        <!-- Prosty formularz BLIK -->
+                        
                         <div id="blikForm" class="payment-form" style="display: @(Model.Payment.PaymentMethod == "BLIK" ? "block" : "none");">
                             <h5><i class="fas fa-mobile-alt me-2"></i>Płatność BLIK</h5>
 
@@ -110,7 +110,7 @@
 
                     @if (Model.Payment.PaymentMethod == "Transfer" || string.IsNullOrEmpty(Model.Payment.PaymentMethod))
                     {
-                        <!-- Prosty formularz przelewu -->
+                        
                         <div id="transferForm" class="payment-form" style="display: @(Model.Payment.PaymentMethod == "Transfer" ? "block" : "none");">
                             <h5><i class="fas fa-university me-2"></i>Przelew bankowy</h5>
 
@@ -135,7 +135,7 @@
                         </div>
                     }
 
-                    <!-- Podsumowanie płatności -->
+                    
                     <div class="payment-summary bg-light p-3 rounded mt-4">
                         <div class="row align-items-center">
                             <div class="col-md-8">
@@ -153,7 +153,7 @@
                         </div>
                     </div>
 
-                    <!-- Checkbox zgody -->
+                    
                     <div class="form-check mt-3">
                         <input class="form-check-input" type="checkbox" id="paymentAgreement" required>
                         <label class="form-check-label" for="paymentAgreement">
@@ -166,7 +166,7 @@
                         </label>
                     </div>
 
-                    <!-- Przyciski -->
+                    
                     <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
                         <a asp-page="/Movies/Index" class="btn btn-outline-secondary">
                             <i class="fas fa-times me-1"></i>Anuluj rezerwację
@@ -182,7 +182,7 @@
 
         @if (ViewData["IsFromSession"] != null)
         {
-            <!-- Ostrzeżenie o zamknięciu strony -->
+            
             <div class="alert alert-danger mt-3">
                 <i class="fas fa-exclamation-triangle me-2"></i>
                 <strong>Uwaga:</strong> Jeśli zamkniesz tę stronę przed ukończeniem płatności, rezerwacja nie zostanie utworzona i będziesz musiał rozpocząć proces od nowa.
@@ -193,7 +193,6 @@
 
 @section Scripts {
     <script>
-        // Payment method selection (tylko gdy nie wybrano wcześniej)
         @if (string.IsNullOrEmpty(Model.Payment.PaymentMethod))
         {
             <text>
@@ -220,9 +219,7 @@
             </text>
         }
 
-        // =================== PROSTE FORMATOWANIE PÓL ===================
 
-        // Formatowanie numeru karty (spacje co 4 cyfry)
         document.getElementById('cardNumber')?.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
@@ -230,7 +227,6 @@
             e.target.value = formattedValue;
         });
 
-        // Formatowanie daty ważności (MM/YY)
         document.getElementById('expiryDate')?.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 2) {
@@ -239,17 +235,14 @@
             e.target.value = value;
         });
 
-        // Tylko cyfry w CVV
         document.getElementById('cvv')?.addEventListener('input', function(e) {
             e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
         });
 
-        // Tylko cyfry w kodzie BLIK
         document.getElementById('blikCode')?.addEventListener('input', function(e) {
             e.target.value = e.target.value.replace(/\D/g, '').substring(0, 6);
         });
 
-        // Formatowanie telefonu
         document.querySelector('input[type="tel"]')?.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length > 9) value = value.substring(0, 9);
@@ -263,14 +256,11 @@
             e.target.value = value;
         });
 
-        // =================== PROSTA WALIDACJA ===================
 
         function showError(field, message) {
-            // Usuń poprzednie błędy
             const existingError = field.parentNode.querySelector('.error-message');
             if (existingError) existingError.remove();
 
-            // Dodaj nowy błąd
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message text-danger small mt-1';
             errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>' + message;
@@ -283,7 +273,6 @@
             document.querySelectorAll('.is-invalid').forEach(field => field.classList.remove('is-invalid'));
         }
 
-        // =================== WALIDACJA FORMULARZA ===================
 
         document.getElementById('paymentForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -293,25 +282,21 @@
             const paymentMethod = '@Model.Payment.PaymentMethod' || document.getElementById('selectedMethod')?.value;
 
             if (paymentMethod === 'Card') {
-                // Walidacja karty
                 const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
                 const expiryDate = document.getElementById('expiryDate').value;
                 const cvv = document.getElementById('cvv').value;
                 const cardName = document.querySelector('#cardForm input[placeholder="Jan Kowalski"]').value;
 
-                // Sprawdź czy wszystkie pola są wypełnione
                 if (!cardName.trim()) {
                     showError(document.querySelector('#cardForm input[placeholder="Jan Kowalski"]'), 'Imię i nazwisko są wymagane');
                     isValid = false;
                 }
 
-                // Numer karty - prosto: 13-19 cyfr
                 if (cardNumber.length < 13 || cardNumber.length > 19) {
                     showError(document.getElementById('cardNumber'), 'Numer karty musi mieć 13-19 cyfr');
                     isValid = false;
                 }
 
-                // Data ważności - prosto: MM/YY format i nie przeszła
                 if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
                     showError(document.getElementById('expiryDate'), 'Wprowadź datę w formacie MM/YY');
                     isValid = false;
@@ -323,7 +308,6 @@
                         isValid = false;
                     }
 
-                    // Sprawdź czy data nie jest przeszła
                     const now = new Date();
                     const cardDate = new Date(2000 + parseInt(year), monthNum - 1);
                     if (cardDate < now) {
@@ -332,31 +316,26 @@
                     }
                 }
 
-                // CVV - prosto: 3-4 cyfry
                 if (cvv.length < 3 || cvv.length > 4) {
                     showError(document.getElementById('cvv'), 'CVV musi mieć 3-4 cyfry');
                     isValid = false;
                 }
 
             } else if (paymentMethod === 'BLIK') {
-                // Walidacja BLIK
                 const blikCode = document.getElementById('blikCode').value;
                 const phone = document.querySelector('#blikForm input[type="tel"]').value.replace(/\s/g, '');
 
-                // Kod BLIK - prosto: dokładnie 6 cyfr
                 if (blikCode.length !== 6) {
                     showError(document.getElementById('blikCode'), 'Kod BLIK musi mieć dokładnie 6 cyfr');
                     isValid = false;
                 }
 
-                // Telefon - prosto: 9 cyfr
                 if (phone.length !== 9) {
                     showError(document.querySelector('#blikForm input[type="tel"]'), 'Numer telefonu musi mieć 9 cyfr');
                     isValid = false;
                 }
 
             } else if (paymentMethod === 'Transfer') {
-                // Walidacja przelewu
                 const selectedBank = document.querySelector('#transferForm select').value;
                 if (!selectedBank) {
                     showError(document.querySelector('#transferForm select'), 'Proszę wybrać bank');
@@ -368,7 +347,6 @@
                 return false;
             }
 
-            // Losowa szansa na błąd (5% dla realizmu)
             if (Math.random() < 0.05) {
                 const errorMessages = [
                     'Brak połączenia z bankiem. Spróbuj ponownie.',
@@ -388,12 +366,10 @@
                 return false;
             }
 
-            // Jeśli wszystko OK - kontynuuj z płatnością
             const payButton = document.getElementById('payButton');
             payButton.disabled = true;
             payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Przetwarzanie płatności...';
 
-            // Symuluj czas przetwarzania
             setTimeout(() => {
                 this.submit();
             }, 1500);
@@ -402,7 +378,6 @@
         @if (ViewData["IsFromSession"] != null)
         {
             <text>
-                // Ostrzeżenie przy opuszczeniu strony
                 window.addEventListener('beforeunload', function(e) {
                     e.preventDefault();
                     e.returnValue = 'Czy na pewno chcesz opuścić stronę? Twoja rezerwacja nie zostanie utworzona.';

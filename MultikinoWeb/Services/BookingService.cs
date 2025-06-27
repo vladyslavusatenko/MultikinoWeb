@@ -15,7 +15,6 @@ namespace MultikinoWeb.Services
             _context = context;
         }
 
-        // NOWA METODA - Pobieranie zajętych miejsc dla danego seansu
         public async Task<List<string>> GetOccupiedSeatsAsync(int screeningId)
         {
             var occupiedSeats = await _context.Tickets
@@ -27,7 +26,6 @@ namespace MultikinoWeb.Services
             return occupiedSeats;
         }
 
-        // STARA METODA - dla zwykłej rezerwacji (zostaje bez zmian)
         public async Task<bool> CreateBookingAsync(BookingViewModel model, int userId)
         {
             var screening = await _context.Screenings
@@ -38,15 +36,12 @@ namespace MultikinoWeb.Services
             if (screening == null)
                 return false;
 
-            // SPRAWDŹ DOSTĘPNOŚĆ MIEJSC
             if (screening.AvailableSeats < model.NumberOfTickets)
                 return false;
 
-            // SPRAWDŹ CZY SEANS JESZCZE SIĘ NIE ROZPOCZĄŁ
             if (screening.StartTime <= DateTime.Now.AddMinutes(30))
                 return false;
 
-            // SPRAWDŹ CZY WYBRANE MIEJSCA NIE SĄ JUŻ ZAJĘTE
             var selectedSeats = model.SelectedSeats.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var occupiedSeats = await GetOccupiedSeatsAsync(model.ScreeningId);
 
@@ -73,7 +68,6 @@ namespace MultikinoWeb.Services
                 _context.Bookings.Add(booking);
                 await _context.SaveChangesAsync();
 
-                // UTWÓRZ BILETY Z WYBRANYMI MIEJSCAMI
                 for (int i = 0; i < model.NumberOfTickets; i++)
                 {
                     var seatNumber = i < selectedSeats.Length ? selectedSeats[i] : $"AUTO{i + 1}";
@@ -88,7 +82,6 @@ namespace MultikinoWeb.Services
                     _context.Tickets.Add(ticket);
                 }
 
-                // ZAKTUALIZUJ DOSTĘPNE MIEJSCA
                 screening.AvailableSeats -= model.NumberOfTickets;
 
                 await _context.SaveChangesAsync();
@@ -102,7 +95,6 @@ namespace MultikinoWeb.Services
             }
         }
 
-        // NOWA METODA - dla rezerwacji gotówkowych
         public async Task<bool> CreateCashBookingAsync(BookingViewModel model, int userId)
         {
             var screening = await _context.Screenings
@@ -113,15 +105,12 @@ namespace MultikinoWeb.Services
             if (screening == null)
                 return false;
 
-            // SPRAWDŹ DOSTĘPNOŚĆ MIEJSC
             if (screening.AvailableSeats < model.NumberOfTickets)
                 return false;
 
-            // SPRAWDŹ CZY SEANS JESZCZE SIĘ NIE ROZPOCZĄŁ
             if (screening.StartTime <= DateTime.Now.AddMinutes(30))
                 return false;
 
-            // SPRAWDŹ CZY WYBRANE MIEJSCA NIE SĄ JUŻ ZAJĘTE
             var selectedSeats = model.SelectedSeats.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var occupiedSeats = await GetOccupiedSeatsAsync(model.ScreeningId);
 
@@ -148,7 +137,6 @@ namespace MultikinoWeb.Services
                 _context.Bookings.Add(booking);
                 await _context.SaveChangesAsync();
 
-                // UTWÓRZ BILETY Z WYBRANYMI MIEJSCAMI
                 for (int i = 0; i < model.NumberOfTickets; i++)
                 {
                     var seatNumber = i < selectedSeats.Length ? selectedSeats[i] : $"AUTO{i + 1}";
@@ -163,7 +151,6 @@ namespace MultikinoWeb.Services
                     _context.Tickets.Add(ticket);
                 }
 
-                // ZAKTUALIZUJ DOSTĘPNE MIEJSCA
                 screening.AvailableSeats -= model.NumberOfTickets;
 
                 await _context.SaveChangesAsync();
@@ -177,12 +164,10 @@ namespace MultikinoWeb.Services
             }
         }
 
-        // NOWA METODA - do tworzenia rezerwacji po udanej płatności online
         public async Task<int?> CreatePaidBookingAsync(string sessionData)
         {
             try
             {
-                // Deserializuj dane z sesji
                 var bookingData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(sessionData);
                 
                 var screeningId = bookingData["ScreeningId"].GetInt32();
@@ -199,7 +184,6 @@ namespace MultikinoWeb.Services
                 if (screening == null)
                     return null;
 
-                // Sprawdź ponownie dostępność miejsc
                 if (screening.AvailableSeats < numberOfTickets)
                     return null;
 
@@ -227,7 +211,6 @@ namespace MultikinoWeb.Services
                     _context.Bookings.Add(booking);
                     await _context.SaveChangesAsync();
 
-                    // UTWÓRZ BILETY
                     for (int i = 0; i < numberOfTickets; i++)
                     {
                         var seatNumber = i < selectedSeatsArray.Length ? selectedSeatsArray[i] : $"AUTO{i + 1}";
@@ -242,7 +225,6 @@ namespace MultikinoWeb.Services
                         _context.Tickets.Add(ticket);
                     }
 
-                    // ZAKTUALIZUJ DOSTĘPNE MIEJSCA
                     screening.AvailableSeats -= numberOfTickets;
 
                     await _context.SaveChangesAsync();
@@ -296,7 +278,6 @@ namespace MultikinoWeb.Services
             if (booking == null || booking.Status == "Cancelled")
                 return false;
 
-            // SPRAWDŹ CZY MOŻNA ANULOWAĆ (2H PRZED SEANSEM)
             var timeDifference = booking.Screening.StartTime - DateTime.Now;
             if (timeDifference.TotalHours < 2)
             {
@@ -306,13 +287,10 @@ namespace MultikinoWeb.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // ZMIEŃ STATUS REZERWACJI
                 booking.Status = "Cancelled";
 
-                // ZWIĘKSZ DOSTĘPNE MIEJSCA
                 booking.Screening.AvailableSeats += booking.NumberOfTickets;
 
-                // OZNACZ BILETY JAKO ANULOWANE (opcjonalnie)
                 foreach (var ticket in booking.Tickets)
                 {
                     ticket.IsUsed = true; // Można dodać pole IsCancelled zamiast używać IsUsed

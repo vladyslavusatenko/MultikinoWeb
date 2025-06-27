@@ -58,7 +58,7 @@
                         </div>
                     </div>
 
-                    <!-- Informacje o wybranym filmie i sali -->
+                    
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="card bg-light" id="movieInfo" style="display: none;">
@@ -115,7 +115,7 @@
                         </div>
                     </div>
 
-                    <!-- Sprawdzanie dostępności sali -->
+                    
                     <div class="mb-4">
                         <button type="button" class="btn btn-info" onclick="checkAvailability()" id="checkAvailabilityBtn" disabled>
                             <i class="fas fa-search me-1"></i>Sprawdź dostępność sali
@@ -123,7 +123,7 @@
                         <div id="availabilityResult" class="mt-2"></div>
                     </div>
 
-                    <!-- Podsumowanie -->
+                    
                     <div class="card bg-light mb-4" id="summaryCard" style="display: none;">
                         <div class="card-header">
                             <h6><i class="fas fa-clipboard-list me-2"></i>Podsumowanie seansu</h6>
@@ -146,7 +146,7 @@
                         </div>
                     </div>
 
-                    <!-- Przyciski akcji -->
+                    
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a asp-page="/Admin/Screenings/Index" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-1"></i>Anuluj
@@ -167,7 +167,6 @@
         let selectedMovie = null;
         let selectedHall = null;
 
-        // Ustaw minimalną datę na godzinę od teraz
         document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
             now.setHours(now.getHours() + 1);
@@ -280,7 +279,6 @@
         }
 
         async function checkAvailability() {
-            // Walidacja danych przed sprawdzeniem
             if (!selectedMovie) {
                 showAlert('Najpierw wybierz film!', 'warning');
                 return;
@@ -349,11 +347,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
 
-            // Dodaj na górę formularza
             const form = document.getElementById('screeningForm');
             form.insertBefore(alertDiv, form.firstChild);
 
-            // Usuń po 5 sekundach
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
@@ -373,19 +369,16 @@
             submitBtn.disabled = !isValid;
         }
 
-        // Event listeners
         document.getElementById('startTimeInput').addEventListener('change', function() {
             calculateEndTime();
             enableAvailabilityCheck();
         });
         document.getElementById('ScreeningData_TicketPrice').addEventListener('input', updateSummary);
         document.getElementById('movieSelect').addEventListener('change', function() {
-            // Wyczyść wyniki sprawdzania gdy zmieni się film
             document.getElementById('availabilityResult').innerHTML = '';
             document.getElementById('submitBtn').disabled = true;
         });
         document.getElementById('hallSelect').addEventListener('change', function() {
-            // Wyczyść wyniki sprawdzania gdy zmieni się sala
             document.getElementById('availabilityResult').innerHTML = '';
             document.getElementById('submitBtn').disabled = true;
         });
