@@ -71,7 +71,7 @@
                     <i class="fas fa-star"></i>
                 </div>
                 <!-- Znajdź sekcję z stat-counter i zmień: -->
-                <div class="stat-counter" data-count="@Math.Round(Model.AverageRating)">0</div>
+                <div class="stat-counter" data-count="@Model.AverageRating">0</div>
                 <p class="text-muted">Średnia ocena filmów</p>
             </div>
         </div>
@@ -341,24 +341,32 @@
                         const target = parseFloat(counter.getAttribute('data-count'));
                         const increment = target / 100;
                         let current = 0;
-                        
+
+
                         const updateCounter = () => {
-                            if (current < target) {
-                                current += increment;
-                                if (target > 100) {
-                                    counter.textContent = Math.floor(current).toLocaleString();
-                                } else {
-                                    counter.textContent = (Math.floor(current * 10) / 10).toFixed(1);
-                                }
-                                requestAnimationFrame(updateCounter);
-                            } else {
-                                if (target > 100) {
-                                    counter.textContent = Math.floor(target).toLocaleString();
-                                } else {
-                                    counter.textContent = target.toFixed(1);
-                                }
-                            }
-                        };
+                                                    if (current < target) {
+                                                        current += increment;
+
+                                                        // ZMIANA: Sprawdź czy liczba jest całkowita zamiast czy > 100
+                                                        const isInteger = Number.isInteger(target);
+
+                                                        if (isInteger) {
+                                                            counter.textContent = Math.floor(current).toLocaleString();
+                                                        } else {
+                                                            counter.textContent = (Math.floor(current * 10) / 10).toFixed(1);
+                                                        }
+                                                        requestAnimationFrame(updateCounter);
+                                                    } else {
+                                                        // ZMIANA: Również w końcowej wartości
+                                                        const isInteger = Number.isInteger(target);
+
+                                                        if (isInteger) {
+                                                            counter.textContent = Math.floor(target).toLocaleString();
+                                                        } else {
+                                                            counter.textContent = target.toFixed(1);
+                                                        }
+                                                    }
+                                                };
                         
                         updateCounter();
                         observer.unobserve(counter);

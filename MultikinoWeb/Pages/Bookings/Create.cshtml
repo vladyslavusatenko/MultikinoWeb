@@ -39,9 +39,9 @@ else
                                     </span>
                                 </p>
                             </div>
-                            <div class="col-md-4 text-end">
-                                <div class="price-display">
-                                    <small class="text-muted">Cena za bilet:</small>
+                            <div class="col-md-4 text-end text-white">
+                                <div class="price-display text-white">
+                                    <small class="text-white">Cena za bilet:</small>
                                     <h4 class="text-success mb-0">@Model.Screening.TicketPrice.ToString("C")</h4>
                                 </div>
                             </div>
@@ -158,7 +158,7 @@ else
                                 <h6><i class="fas fa-calculator me-2"></i>Podsumowanie zamówienia</h6>
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <div class="d-flex justify-content-between mb-2">
+                                        <div class="d-flex justify-content-between mb-2 text-white">
                                             <span>Cena za bilet:</span>
                                             <span id="ticketPrice">@Model.Screening.TicketPrice.ToString("C")</span>
                                         </div>
@@ -224,70 +224,7 @@ else
     </div>
 }
 
-<!-- Modal Regulamin -->
-<div class="modal fade" id="termsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-file-contract me-2"></i>Regulamin Multikina</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>1. Postanowienia ogólne</h6>
-                <p>Niniejszy regulamin określa zasady korzystania z usług Multikina oraz warunki rezerwacji i zakupu biletów.</p>
 
-                <h6>2. Rezerwacja i zakup biletów</h6>
-                <p>Bilety można rezerwować online lub w kasie kina. Rezerwacja jest ważna przez 30 minut przed rozpoczęciem seansu.</p>
-
-                <h6>3. Anulowanie rezerwacji</h6>
-                <p>Rezerwację można anulować bezpłatnie do 2 godzin przed rozpoczęciem seansu.</p>
-
-                <h6>4. Zasady w kinie</h6>
-                <p>W kinie obowiązuje zakaz wnoszenia własnych napojów i przekąsek. Prosimy o ciche zachowanie podczas seansu.</p>
-
-                <h6>5. Polityka zwrotów</h6>
-                <p>Zwrot biletu możliwy jest do 24 godzin przed seansem z potrąceniem 10% opłaty administracyjnej.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Polityka Prywatności -->
-<div class="modal fade" id="privacyModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-shield-alt me-2"></i>Polityka Prywatności</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>1. Administrator danych</h6>
-                <p>Administratorem Twoich danych osobowych jest Multikino Sp. z o.o.</p>
-
-                <h6>2. Cele przetwarzania</h6>
-                <p>Przetwarzamy Twoje dane w celu realizacji usługi rezerwacji biletów oraz w celach marketingowych za Twoją zgodą.</p>
-
-                <h6>3. Rodzaje zbieranych danych</h6>
-                <p>Zbieramy dane podane podczas rejestracji: imię, nazwisko, email oraz historię zakupów.</p>
-
-                <h6>4. Przekazywanie danych</h6>
-                <p>Twoje dane nie będą przekazywane podmiotom trzecim bez Twojej wyraźnej zgody.</p>
-
-                <h6>5. Twoje prawa</h6>
-                <p>Masz prawo do dostępu, sprostowania, usunięcia swoich danych oraz przenoszenia danych.</p>
-
-                <h6>6. Cookies</h6>
-                <p>Używamy plików cookies w celu poprawy funkcjonalności strony oraz analizy ruchu.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

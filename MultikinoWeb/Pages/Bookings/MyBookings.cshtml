@@ -28,15 +28,17 @@ else
             {
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100 @(booking.Status == "Cancelled" ? "border-danger" : "border-success")">
-                        <div class="card-header @(booking.Status == "Cancelled" ? "bg-danger" : "bg-success") text-white">
+                        <div class="card-header @(booking.Status == "Cancelled" ? "bg-danger" :
+                                                 booking.Status == "AwaitingCashPayment" ? "bg-warning" : "bg-success") text-white">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">Rezerwacja #@booking.BookingId</h6>
-                                <!-- Znajdź badge z statusem i zamień na: -->
                                 <span class="badge bg-@(booking.Status == "Confirmed" ? "success" :
                         booking.Status == "Cancelled" ? "danger" :
-                        booking.Status == "Completed" ? "info" : "warning")">
-                                    @(booking.Status == "Confirmed" ? "Potwierdzona" :
+                        booking.Status == "AwaitingCashPayment" ? "warning" :
+                        booking.Status == "Completed" ? "info" : "secondary")">
+                                    @(booking.Status == "Confirmed" ? "Potwierdzona i opłacona" :
                                         booking.Status == "Cancelled" ? "Anulowana" :
+                                        booking.Status == "AwaitingCashPayment" ? "Do opłaty w kasie" :
                                         booking.Status == "Completed" ? "Zakończona" :
                                         booking.Status == "Pending" ? "Oczekująca" : booking.Status)
                                 </span>

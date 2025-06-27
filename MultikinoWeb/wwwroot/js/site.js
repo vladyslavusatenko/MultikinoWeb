@@ -708,17 +708,25 @@ class CounterAnimation {
         const increment = target / (duration / 16); // 60fps
         let current = 0;
 
+        // NOWA LOGIKA: Sprawdź czy liczba jest całkowita
+        const isInteger = Number.isInteger(target);
+
         const updateCounter = () => {
             if (current < target) {
                 current += increment;
-                if (target > 100) {
+
+                if (isInteger) {
+                    // Dla liczb całkowitych - bez miejsc dziesiętnych
                     counter.textContent = Math.floor(current).toLocaleString();
                 } else {
+                    // Dla liczb z miejscami dziesiętnymi
                     counter.textContent = (Math.floor(current * 10) / 10).toFixed(1);
                 }
+
                 requestAnimationFrame(updateCounter);
             } else {
-                if (target > 100) {
+                // Końcowa wartość
+                if (isInteger) {
                     counter.textContent = Math.floor(target).toLocaleString();
                 } else {
                     counter.textContent = target.toFixed(1);

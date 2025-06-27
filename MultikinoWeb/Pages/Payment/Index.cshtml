@@ -1,4 +1,4 @@
-﻿@page "{bookingId:int}"
+﻿@page "{bookingId:int?}"
 @model PaymentIndexModel
 @{
     ViewData["Title"] = "Płatność";
@@ -11,171 +11,226 @@
                 <h3><i class="fas fa-credit-card me-2"></i>Finalizacja płatności</h3>
             </div>
             <div class="card-body">
-                <!-- Podsumowanie -->
+                <!-- Podsumowanie rezerwacji -->
                 <div class="alert alert-info">
-                    <h5><i class="fas fa-info-circle me-2"></i>Podsumowanie zamówienia</h5>
-                    <p class="mb-0">Kwota do zapłaty: <strong>@Model.Payment.Amount.ToString("C")</strong></p>
+                    <h5><i class="fas fa-info-circle me-2"></i>Podsumowanie rezerwacji</h5>
+                    @if (ViewData["MovieTitle"] != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Film:</strong> @ViewData["MovieTitle"]</p>
+                                <p class="mb-1"><strong>Sala:</strong> @ViewData["HallName"]</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Bilety:</strong> @ViewData["NumberOfTickets"] szt.</p>
+                                <p class="mb-1"><strong>Data seansu:</strong> @DateTime.Parse(ViewData["StartTime"].ToString()).ToString("dd.MM.yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                        <hr>
+                    }
+                    <p class="mb-0 h5"><strong>Kwota do zapłaty: @Model.Payment.Amount.ToString("C")</strong></p>
                 </div>
 
+                @if (!string.IsNullOrEmpty(Model.Payment.PaymentMethod))
+                {
+                    <!-- Alert o wybranej metodzie -->
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Wybrana metoda płatności:</strong> 
+                        @(Model.Payment.PaymentMethod == "Card" ? "Karta płatnicza" :
+                          Model.Payment.PaymentMethod == "BLIK" ? "BLIK" :
+                          Model.Payment.PaymentMethod == "Transfer" ? "Przelew bankowy" : 
+                          Model.Payment.PaymentMethod)
+                    </div>
+                }
+
                 <form method="post" id="paymentForm">
-                    <input type="hidden" asp-for="Payment.BookingId" />
                     <input type="hidden" asp-for="Payment.Amount" />
+                    <input type="hidden" asp-for="Payment.PaymentMethod" />
 
-                    <!-- Wybór metody płatności -->
-                    <div class="mb-4">
-                        <h5>Wybierz metodę płatności:</h5>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="card payment-method" data-method="Card">
-                                    <div class="card-body text-center">
-                                        <i class="fas fa-credit-card fa-3x text-primary mb-2"></i>
-                                        <h6>Karta płatnicza</h6>
-                                    </div>
+                    <!-- Symulacja różnych metod płatności z walidacją -->
+                    @if (Model.Payment.PaymentMethod == "Card" || string.IsNullOrEmpty(Model.Payment.PaymentMethod))
+                    {
+                        <!-- Prosty formularz karty -->
+                        <div id="cardForm" class="payment-form" style="display: @(Model.Payment.PaymentMethod == "Card" ? "block" : "none");">
+                            <h5><i class="fas fa-credit-card me-2"></i>Dane karty płatniczej</h5>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Numer karty</label>
+                                    <input type="text" class="form-control" placeholder="1234 5678 9012 3456"
+                                           maxlength="23" id="cardNumber" required />
+                                    <small class="form-text text-muted">13-19 cyfr</small>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Imię i nazwisko</label>
+                                    <input type="text" class="form-control" placeholder="Jan Kowalski" required />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Data ważności</label>
+                                    <input type="text" class="form-control" placeholder="MM/YY"
+                                           maxlength="5" id="expiryDate" required />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">CVV</label>
+                                    <input type="password" class="form-control" placeholder="123"
+                                           maxlength="4" id="cvv" required />
+                                    <small class="form-text text-muted">3-4 cyfry z tyłu karty</small>
                                 </div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card payment-method" data-method="BLIK">
-                                    <div class="card-body text-center">
-                                        <i class="fas fa-mobile-alt fa-3x text-success mb-2"></i>
-                                        <h6>BLIK</h6>
-                                    </div>
+                        </div>
+                    }
+
+                    @if (Model.Payment.PaymentMethod == "BLIK" || string.IsNullOrEmpty(Model.Payment.PaymentMethod))
+                    {
+                        <!-- Prosty formularz BLIK -->
+                        <div id="blikForm" class="payment-form" style="display: @(Model.Payment.PaymentMethod == "BLIK" ? "block" : "none");">
+                            <h5><i class="fas fa-mobile-alt me-2"></i>Płatność BLIK</h5>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Kod BLIK</label>
+                                    <input type="text" class="form-control text-center" placeholder="123456"
+                                           maxlength="6" id="blikCode" style="font-size: 1.2rem;" required />
+                                    <small class="form-text text-muted">6 cyfr z aplikacji bankowej</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Numer telefonu</label>
+                                    <input type="tel" class="form-control" placeholder="123 456 789" required />
+                                    <small class="form-text text-muted">9 cyfr bez kierunkowego</small>
                                 </div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card payment-method" data-method="Transfer">
-                                    <div class="card-body text-center">
-                                        <i class="fas fa-university fa-3x text-info mb-2"></i>
-                                        <h6>Przelew bankowy</h6>
-                                    </div>
-                                </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Instrukcja:</strong> Wygeneruj kod BLIK w aplikacji bankowej i wprowadź powyżej.
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Payment.PaymentMethod == "Transfer" || string.IsNullOrEmpty(Model.Payment.PaymentMethod))
+                    {
+                        <!-- Prosty formularz przelewu -->
+                        <div id="transferForm" class="payment-form" style="display: @(Model.Payment.PaymentMethod == "Transfer" ? "block" : "none");">
+                            <h5><i class="fas fa-university me-2"></i>Przelew bankowy</h5>
+
+                            <div class="mb-3">
+                                <label class="form-label">Wybierz bank</label>
+                                <select class="form-select" required>
+                                    <option value="">-- Wybierz bank --</option>
+                                    <option value="pko">PKO Bank Polski</option>
+                                    <option value="pekao">Bank Pekao</option>
+                                    <option value="mbank">mBank</option>
+                                    <option value="ing">ING Bank Śląski</option>
+                                    <option value="santander">Santander Bank</option>
+                                    <option value="millennium">Bank Millennium</option>
+                                    <option value="alior">Alior Bank</option>
+                                </select>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Zostaniesz przekierowany do strony wybranego banku.
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Podsumowanie płatności -->
+                    <div class="payment-summary bg-light p-3 rounded mt-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-1"><i class="fas fa-receipt me-2"></i>Podsumowanie płatności</h6>
+                                <small class="text-muted">
+                                    Płatność za @ViewData["NumberOfTickets"]
+                                    @(ViewData["NumberOfTickets"].ToString() == "1" ? "bilet" :
+                                        int.Parse(ViewData["NumberOfTickets"].ToString()) < 5 ? "bilety" : "biletów")
+                                    na film "@ViewData["MovieTitle"]"
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <h4 class="text-success mb-0">@Model.Payment.Amount.ToString("C")</h4>
                             </div>
                         </div>
                     </div>
 
-                    <input type="hidden" asp-for="Payment.PaymentMethod" id="selectedMethod" />
-
-                    <!-- Formularz karty -->
-                    <div id="cardForm" class="payment-form" style="display: none;">
-                        <h5><i class="fas fa-credit-card me-2"></i>Dane karty płatniczej</h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Numer karty</label>
-                                <input type="text" class="form-control" placeholder="1234 5678 9012 3456"
-                                       maxlength="19" id="cardNumber" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Imię i nazwisko</label>
-                                <input type="text" class="form-control" placeholder="Jan Kowalski" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Data ważności</label>
-                                <input type="text" class="form-control" placeholder="MM/YY"
-                                       maxlength="5" id="expiryDate" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">CVV</label>
-                                <input type="text" class="form-control" placeholder="123"
-                                       maxlength="4" id="cvv" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Formularz BLIK -->
-                    <div id="blikForm" class="payment-form" style="display: none;">
-                        <h5><i class="fas fa-mobile-alt me-2"></i>Płatność BLIK</h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Kod BLIK (6 cyfr)</label>
-                                <input type="text" class="form-control text-center" placeholder="123456"
-                                       maxlength="6" id="blikCode" style="font-size: 1.5rem; letter-spacing: 0.5rem;" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Numer telefonu</label>
-                                <input type="tel" class="form-control" placeholder="+48 123 456 789" />
-                            </div>
-                        </div>
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Wygeneruj kod BLIK w aplikacji mobilnej swojego banku i wprowadź go powyżej.
-                        </div>
-                    </div>
-
-                    <!-- Formularz przelewu -->
-                    <div id="transferForm" class="payment-form" style="display: none;">
-                        <h5><i class="fas fa-university me-2"></i>Przelew bankowy</h5>
-                        <div class="mb-3">
-                            <label class="form-label">Wybierz swój bank</label>
-                            <select class="form-select">
-                                <option value="">-- Wybierz bank --</option>
-                                <option value="pko">PKO Bank Polski</option>
-                                <option value="pekao">Bank Pekao</option>
-                                <option value="mbank">mBank</option>
-                                <option value="ing">ING Bank Śląski</option>
-                                <option value="santander">Santander Bank</option>
-                                <option value="millennium">Bank Millennium</option>
-                                <option value="alior">Alior Bank</option>
-                                <option value="getin">Getin Noble Bank</option>
-                            </select>
-                        </div>
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Zostaniesz przekierowany do strony swojego banku, aby dokończyć płatność.
-                        </div>
+                    <!-- Checkbox zgody -->
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="paymentAgreement" required>
+                        <label class="form-check-label" for="paymentAgreement">
+                            <small>
+                                Oświadczam, że zapoznałem się z
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Regulaminem</a>
+                                i akceptuję warunki płatności. Zgadzam się na przetwarzanie danych osobowych
+                                w celu realizacji transakcji.
+                            </small>
+                        </label>
                     </div>
 
                     <!-- Przyciski -->
                     <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
-                        <a href="javascript:history.back()" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i>Wróć
+                        <a asp-page="/Movies/Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Anuluj rezerwację
                         </a>
-                        <button type="submit" class="btn btn-success btn-lg" id="payButton" disabled>
+                        <button type="submit" class="btn btn-success btn-lg" id="payButton" 
+                                @(string.IsNullOrEmpty(Model.Payment.PaymentMethod) ? "disabled" : "")>
                             <i class="fas fa-lock me-2"></i>Zapłać @Model.Payment.Amount.ToString("C")
                         </button>
                     </div>
                 </form>
             </div>
         </div>
+
+        @if (ViewData["IsFromSession"] != null)
+        {
+            <!-- Ostrzeżenie o zamknięciu strony -->
+            <div class="alert alert-danger mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Uwaga:</strong> Jeśli zamkniesz tę stronę przed ukończeniem płatności, rezerwacja nie zostanie utworzona i będziesz musiał rozpocząć proces od nowa.
+            </div>
+        }
     </div>
 </div>
 
 @section Scripts {
     <script>
-        // Payment method selection
-        document.querySelectorAll('.payment-method').forEach(method => {
-            method.addEventListener('click', function() {
-                // Remove active class from all
-                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('border-primary', 'bg-light'));
+        // Payment method selection (tylko gdy nie wybrano wcześniej)
+        @if (string.IsNullOrEmpty(Model.Payment.PaymentMethod))
+        {
+            <text>
+                document.querySelectorAll('.payment-method').forEach(method => {
+                    method.addEventListener('click', function() {
+                        document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('border-primary', 'bg-light'));
+                        this.classList.add('border-primary', 'bg-light');
+                        document.querySelectorAll('.payment-form').forEach(form => form.style.display = 'none');
 
-                // Add active class to selected
-                this.classList.add('border-primary', 'bg-light');
+                        const selectedMethod = this.getAttribute('data-method');
+                        document.getElementById('selectedMethod').value = selectedMethod;
 
-                // Hide all forms
-                document.querySelectorAll('.payment-form').forEach(form => form.style.display = 'none');
+                        if (selectedMethod === 'Card') {
+                            document.getElementById('cardForm').style.display = 'block';
+                        } else if (selectedMethod === 'BLIK') {
+                            document.getElementById('blikForm').style.display = 'block';
+                        } else if (selectedMethod === 'Transfer') {
+                            document.getElementById('transferForm').style.display = 'block';
+                        }
 
-                // Show selected form
-                const selectedMethod = this.getAttribute('data-method');
-                document.getElementById('selectedMethod').value = selectedMethod;
+                        document.getElementById('payButton').disabled = false;
+                    });
+                });
+            </text>
+        }
 
-                if (selectedMethod === 'Card') {
-                    document.getElementById('cardForm').style.display = 'block';
-                } else if (selectedMethod === 'BLIK') {
-                    document.getElementById('blikForm').style.display = 'block';
-                } else if (selectedMethod === 'Transfer') {
-                    document.getElementById('transferForm').style.display = 'block';
-                }
+        // =================== PROSTE FORMATOWANIE PÓL ===================
 
-                document.getElementById('payButton').disabled = false;
-            });
-        });
-
-        // Card number formatting
+        // Formatowanie numeru karty (spacje co 4 cyfry)
         document.getElementById('cardNumber')?.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            if (formattedValue.length > 23) formattedValue = formattedValue.substring(0, 23);
             e.target.value = formattedValue;
         });
 
-        // Expiry date formatting
+        // Formatowanie daty ważności (MM/YY)
         document.getElementById('expiryDate')?.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 2) {
@@ -184,22 +239,176 @@
             e.target.value = value;
         });
 
-        // CVV formatting
+        // Tylko cyfry w CVV
         document.getElementById('cvv')?.addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/\D/g, '');
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
         });
 
-        // BLIK code formatting
+        // Tylko cyfry w kodzie BLIK
         document.getElementById('blikCode')?.addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/\D/g, '');
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 6);
         });
 
-        // Form submission
+        // Formatowanie telefonu
+        document.querySelector('input[type="tel"]')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 9) value = value.substring(0, 9);
+
+            if (value.length > 6) {
+                value = value.substring(0, 3) + ' ' + value.substring(3, 6) + ' ' + value.substring(6);
+            } else if (value.length > 3) {
+                value = value.substring(0, 3) + ' ' + value.substring(3);
+            }
+
+            e.target.value = value;
+        });
+
+        // =================== PROSTA WALIDACJA ===================
+
+        function showError(field, message) {
+            // Usuń poprzednie błędy
+            const existingError = field.parentNode.querySelector('.error-message');
+            if (existingError) existingError.remove();
+
+            // Dodaj nowy błąd
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message text-danger small mt-1';
+            errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>' + message;
+            field.parentNode.appendChild(errorDiv);
+            field.classList.add('is-invalid');
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(error => error.remove());
+            document.querySelectorAll('.is-invalid').forEach(field => field.classList.remove('is-invalid'));
+        }
+
+        // =================== WALIDACJA FORMULARZA ===================
+
         document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            clearErrors();
+
+            let isValid = true;
+            const paymentMethod = '@Model.Payment.PaymentMethod' || document.getElementById('selectedMethod')?.value;
+
+            if (paymentMethod === 'Card') {
+                // Walidacja karty
+                const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                const expiryDate = document.getElementById('expiryDate').value;
+                const cvv = document.getElementById('cvv').value;
+                const cardName = document.querySelector('#cardForm input[placeholder="Jan Kowalski"]').value;
+
+                // Sprawdź czy wszystkie pola są wypełnione
+                if (!cardName.trim()) {
+                    showError(document.querySelector('#cardForm input[placeholder="Jan Kowalski"]'), 'Imię i nazwisko są wymagane');
+                    isValid = false;
+                }
+
+                // Numer karty - prosto: 13-19 cyfr
+                if (cardNumber.length < 13 || cardNumber.length > 19) {
+                    showError(document.getElementById('cardNumber'), 'Numer karty musi mieć 13-19 cyfr');
+                    isValid = false;
+                }
+
+                // Data ważności - prosto: MM/YY format i nie przeszła
+                if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
+                    showError(document.getElementById('expiryDate'), 'Wprowadź datę w formacie MM/YY');
+                    isValid = false;
+                } else {
+                    const [month, year] = expiryDate.split('/');
+                    const monthNum = parseInt(month);
+                    if (monthNum < 1 || monthNum > 12) {
+                        showError(document.getElementById('expiryDate'), 'Nieprawidłowy miesiąc (01-12)');
+                        isValid = false;
+                    }
+
+                    // Sprawdź czy data nie jest przeszła
+                    const now = new Date();
+                    const cardDate = new Date(2000 + parseInt(year), monthNum - 1);
+                    if (cardDate < now) {
+                        showError(document.getElementById('expiryDate'), 'Karta wygasła');
+                        isValid = false;
+                    }
+                }
+
+                // CVV - prosto: 3-4 cyfry
+                if (cvv.length < 3 || cvv.length > 4) {
+                    showError(document.getElementById('cvv'), 'CVV musi mieć 3-4 cyfry');
+                    isValid = false;
+                }
+
+            } else if (paymentMethod === 'BLIK') {
+                // Walidacja BLIK
+                const blikCode = document.getElementById('blikCode').value;
+                const phone = document.querySelector('#blikForm input[type="tel"]').value.replace(/\s/g, '');
+
+                // Kod BLIK - prosto: dokładnie 6 cyfr
+                if (blikCode.length !== 6) {
+                    showError(document.getElementById('blikCode'), 'Kod BLIK musi mieć dokładnie 6 cyfr');
+                    isValid = false;
+                }
+
+                // Telefon - prosto: 9 cyfr
+                if (phone.length !== 9) {
+                    showError(document.querySelector('#blikForm input[type="tel"]'), 'Numer telefonu musi mieć 9 cyfr');
+                    isValid = false;
+                }
+
+            } else if (paymentMethod === 'Transfer') {
+                // Walidacja przelewu
+                const selectedBank = document.querySelector('#transferForm select').value;
+                if (!selectedBank) {
+                    showError(document.querySelector('#transferForm select'), 'Proszę wybrać bank');
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                return false;
+            }
+
+            // Losowa szansa na błąd (5% dla realizmu)
+            if (Math.random() < 0.05) {
+                const errorMessages = [
+                    'Brak połączenia z bankiem. Spróbuj ponownie.',
+                    'Dane płatności zostały odrzucone.',
+                    'Usługa płatności tymczasowo niedostępna.',
+                    'Wystąpił błąd podczas przetwarzania płatności.'
+                ];
+
+                const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger mt-3';
+                alertDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + randomError;
+                document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('form'));
+
+                setTimeout(() => alertDiv.remove(), 4000);
+                return false;
+            }
+
+            // Jeśli wszystko OK - kontynuuj z płatnością
             const payButton = document.getElementById('payButton');
             payButton.disabled = true;
-            payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Przetwarzanie...';
+            payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Przetwarzanie płatności...';
+
+            // Symuluj czas przetwarzania
+            setTimeout(() => {
+                this.submit();
+            }, 1500);
         });
+
+        @if (ViewData["IsFromSession"] != null)
+        {
+            <text>
+                // Ostrzeżenie przy opuszczeniu strony
+                window.addEventListener('beforeunload', function(e) {
+                    e.preventDefault();
+                    e.returnValue = 'Czy na pewno chcesz opuścić stronę? Twoja rezerwacja nie zostanie utworzona.';
+                });
+            </text>
+        }
     </script>
 
     <style>
@@ -219,6 +428,29 @@
             border-radius: 10px;
             padding: 20px;
             background-color: #f8f9fa;
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .error-message {
+            animation: slideDown 0.3s ease;
+        }
+
+        @@keyframes slideDown {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         }
     </style>
 }

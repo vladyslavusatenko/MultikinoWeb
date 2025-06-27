@@ -2,6 +2,7 @@
 using MultikinoWeb.Data;
 using MultikinoWeb.Models;
 using MultikinoWeb.ViewModels;
+using System.Text.Json;
 
 namespace MultikinoWeb.Services
 {
@@ -19,13 +20,14 @@ namespace MultikinoWeb.Services
         {
             var occupiedSeats = await _context.Tickets
                 .Where(t => t.Booking.ScreeningId == screeningId &&
-                           t.Booking.Status == "Confirmed")
+                           (t.Booking.Status == "Confirmed" || t.Booking.Status == "AwaitingCashPayment"))
                 .Select(t => t.SeatNumber)
                 .ToListAsync();
 
             return occupiedSeats;
         }
 
+        // STARA METODA - dla zwykłej rezerwacji (zostaje bez zmian)
         public async Task<bool> CreateBookingAsync(BookingViewModel model, int userId)
         {
             var screening = await _context.Screenings
@@ -100,6 +102,165 @@ namespace MultikinoWeb.Services
             }
         }
 
+        // NOWA METODA - dla rezerwacji gotówkowych
+        public async Task<bool> CreateCashBookingAsync(BookingViewModel model, int userId)
+        {
+            var screening = await _context.Screenings
+                .Include(s => s.Movie)
+                .Include(s => s.Hall)
+                .FirstOrDefaultAsync(s => s.ScreeningId == model.ScreeningId);
+
+            if (screening == null)
+                return false;
+
+            // SPRAWDŹ DOSTĘPNOŚĆ MIEJSC
+            if (screening.AvailableSeats < model.NumberOfTickets)
+                return false;
+
+            // SPRAWDŹ CZY SEANS JESZCZE SIĘ NIE ROZPOCZĄŁ
+            if (screening.StartTime <= DateTime.Now.AddMinutes(30))
+                return false;
+
+            // SPRAWDŹ CZY WYBRANE MIEJSCA NIE SĄ JUŻ ZAJĘTE
+            var selectedSeats = model.SelectedSeats.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var occupiedSeats = await GetOccupiedSeatsAsync(model.ScreeningId);
+
+            var conflictingSeats = selectedSeats.Intersect(occupiedSeats).ToList();
+            if (conflictingSeats.Any())
+            {
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var booking = new Booking
+                {
+                    UserId = userId,
+                    ScreeningId = model.ScreeningId,
+                    BookingDate = DateTime.Now,
+                    NumberOfTickets = model.NumberOfTickets,
+                    TotalAmount = model.NumberOfTickets * screening.TicketPrice,
+                    Status = "AwaitingCashPayment", // Specjalny status dla gotówki
+                    PaymentMethod = "Cash"
+                };
+
+                _context.Bookings.Add(booking);
+                await _context.SaveChangesAsync();
+
+                // UTWÓRZ BILETY Z WYBRANYMI MIEJSCAMI
+                for (int i = 0; i < model.NumberOfTickets; i++)
+                {
+                    var seatNumber = i < selectedSeats.Length ? selectedSeats[i] : $"AUTO{i + 1}";
+
+                    var ticket = new Ticket
+                    {
+                        BookingId = booking.BookingId,
+                        SeatNumber = seatNumber,
+                        Price = screening.TicketPrice,
+                        IsUsed = false
+                    };
+                    _context.Tickets.Add(ticket);
+                }
+
+                // ZAKTUALIZUJ DOSTĘPNE MIEJSCA
+                screening.AvailableSeats -= model.NumberOfTickets;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
+
+        // NOWA METODA - do tworzenia rezerwacji po udanej płatności online
+        public async Task<int?> CreatePaidBookingAsync(string sessionData)
+        {
+            try
+            {
+                // Deserializuj dane z sesji
+                var bookingData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(sessionData);
+                
+                var screeningId = bookingData["ScreeningId"].GetInt32();
+                var numberOfTickets = bookingData["NumberOfTickets"].GetInt32();
+                var paymentMethod = bookingData["PaymentMethod"].GetString();
+                var selectedSeats = bookingData["SelectedSeats"].GetString();
+                var userId = bookingData["UserId"].GetInt32();
+
+                var screening = await _context.Screenings
+                    .Include(s => s.Movie)
+                    .Include(s => s.Hall)
+                    .FirstOrDefaultAsync(s => s.ScreeningId == screeningId);
+
+                if (screening == null)
+                    return null;
+
+                // Sprawdź ponownie dostępność miejsc
+                if (screening.AvailableSeats < numberOfTickets)
+                    return null;
+
+                var selectedSeatsArray = selectedSeats.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var occupiedSeats = await GetOccupiedSeatsAsync(screeningId);
+                var conflictingSeats = selectedSeatsArray.Intersect(occupiedSeats).ToList();
+                
+                if (conflictingSeats.Any())
+                    return null;
+
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    var booking = new Booking
+                    {
+                        UserId = userId,
+                        ScreeningId = screeningId,
+                        BookingDate = DateTime.Now,
+                        NumberOfTickets = numberOfTickets,
+                        TotalAmount = numberOfTickets * screening.TicketPrice,
+                        Status = "Confirmed", // Potwierdzona i opłacona
+                        PaymentMethod = paymentMethod
+                    };
+
+                    _context.Bookings.Add(booking);
+                    await _context.SaveChangesAsync();
+
+                    // UTWÓRZ BILETY
+                    for (int i = 0; i < numberOfTickets; i++)
+                    {
+                        var seatNumber = i < selectedSeatsArray.Length ? selectedSeatsArray[i] : $"AUTO{i + 1}";
+
+                        var ticket = new Ticket
+                        {
+                            BookingId = booking.BookingId,
+                            SeatNumber = seatNumber,
+                            Price = screening.TicketPrice,
+                            IsUsed = false
+                        };
+                        _context.Tickets.Add(ticket);
+                    }
+
+                    // ZAKTUALIZUJ DOSTĘPNE MIEJSCA
+                    screening.AvailableSeats -= numberOfTickets;
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return booking.BookingId;
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public async Task<IEnumerable<Booking>> GetUserBookingsAsync(int userId)
         {
             return await _context.Bookings
@@ -107,7 +268,7 @@ namespace MultikinoWeb.Services
                 .ThenInclude(s => s.Movie)
                 .Include(b => b.Screening)
                 .ThenInclude(s => s.Hall)
-                .Include(b => b.Tickets) // Dodaj bilety do ładowania
+                .Include(b => b.Tickets)
                 .Where(b => b.UserId == userId)
                 .OrderByDescending(b => b.BookingDate)
                 .ToListAsync();
@@ -181,7 +342,7 @@ namespace MultikinoWeb.Services
 
         public async Task<decimal> GetTotalRevenueAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
-            var query = _context.Bookings.Where(b => b.Status == "Confirmed");
+            var query = _context.Bookings.Where(b => b.Status == "Confirmed" || b.Status == "AwaitingCashPayment");
 
             if (startDate.HasValue)
                 query = query.Where(b => b.BookingDate >= startDate.Value);

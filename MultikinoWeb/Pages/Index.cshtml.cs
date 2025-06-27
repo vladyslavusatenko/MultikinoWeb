@@ -66,13 +66,22 @@ namespace MultikinoWeb.Pages
             TotalUsers = await _context.Users
                 .CountAsync(u => u.IsActive);
 
-            // Średnia ocena filmów - ZMIANA: round do całkowitej
+            // POPRAWKA: Średnia ocena filmów z jednym miejscem dziesiętnym
             var ratings = await _context.Movies
                 .Where(m => m.IsActive)
                 .Select(m => m.Rating)
                 .ToListAsync();
 
-            AverageRating = ratings.Any() ? Math.Round(ratings.Average()) : 0;
+            if (ratings.Any())
+            {
+                // Zaokrągl do 1 miejsca dziesiętnego zamiast do liczby całkowitej
+                var average = ratings.Average();
+                AverageRating = Math.Round(average, 1);
+            }
+            else
+            {
+                AverageRating = 0;
+            }
         }
     }
 }

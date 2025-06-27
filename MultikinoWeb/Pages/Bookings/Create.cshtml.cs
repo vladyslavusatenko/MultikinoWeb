@@ -105,16 +105,55 @@ namespace MultikinoWeb.Pages.Bookings
                 return Page();
             }
 
-            var result = await _bookingService.CreateBookingAsync(BookingData, userId.Value);
-
-            if (result)
+            // NOWY PRZEPŁYW: Sprawdź metodę płatności
+            if (BookingData.PaymentMethod == "Cash")
             {
-                TempData["SuccessMessage"] = "Rezerwacja została utworzona pomyślnie!";
-                return RedirectToPage("/Bookings/MyBookings");
-            }
+                // Dla gotówki - stwórz rezerwację od razu z odpowiednim statusem
+                var result = await _bookingService.CreateCashBookingAsync(BookingData, userId.Value);
 
-            ModelState.AddModelError("", "Wystąpił błąd podczas tworzenia rezerwacji. Wybrane miejsca mogą być już zajęte.");
-            return Page();
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Rezerwacja została utworzona! Zapłać gotówką w kasie przed seansem.";
+                    return RedirectToPage("/Bookings/MyBookings");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Wystąpił błąd podczas tworzenia rezerwacji.");
+                    return Page();
+                }
+            }
+            else
+            {
+                // Dla innych metod płatności - zapisz dane w sesji i przekieruj do płatności
+                try
+                {
+                    // Zapisz dane rezerwacji w sesji
+                    var bookingSession = new
+                    {
+                        ScreeningId = BookingData.ScreeningId,
+                        NumberOfTickets = BookingData.NumberOfTickets,
+                        PaymentMethod = BookingData.PaymentMethod,
+                        SelectedSeats = BookingData.SelectedSeats,
+                        TotalAmount = BookingData.NumberOfTickets * Screening.TicketPrice,
+                        UserId = userId.Value,
+                        MovieTitle = Screening.Movie.Title,
+                        HallName = Screening.Hall.HallName,
+                        StartTime = Screening.StartTime.ToString("yyyy-MM-dd HH:mm:ss") // Sformatuj datę jako string
+                    };
+
+                    // Zapisz w sesji jako JSON
+                    var jsonString = System.Text.Json.JsonSerializer.Serialize(bookingSession);
+                    HttpContext.Session.SetString("PendingBooking", jsonString);
+
+                    TempData["InfoMessage"] = "Przejdź do płatności aby potwierdzić rezerwację.";
+                    return RedirectToPage("/Payment/Index");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Błąd podczas przygotowywania płatności: " + ex.Message);
+                    return Page();
+                }
+            }
         }
 
         // NOWA METODA API - Pobieranie zajętych miejsc przez AJAX
