@@ -19,6 +19,11 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+// Dodaj po linii z IAdminService
+builder.Services.AddScoped<IScreeningCleanupService, ScreeningCleanupService>();
+// Dodaj także HostedService dla automatycznego wywołania
+builder.Services.AddHostedService<ScreeningCleanupBackgroundService>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
 // Dodanie Razor Pages
 builder.Services.AddRazorPages();

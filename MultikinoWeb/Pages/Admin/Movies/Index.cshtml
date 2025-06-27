@@ -113,26 +113,27 @@
                                 <td>
                                     <span class="badge bg-info">@movie.Screenings.Count() seansów</span>
                                 </td>
+                                <!-- Znajdź sekcję <td> z akcjami i zamień na: -->
                                 <td>
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="btn-group" role="group">
                                         <a asp-page="/Movies/Details" asp-route-id="@movie.MovieId"
-                                           class="btn btn-outline-info" title="Podgląd">
+                                           class="btn btn-sm btn-outline-info" title="Podgląd">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <a asp-page="/Admin/Movies/Edit" asp-route-id="@movie.MovieId"
-                                           class="btn btn-outline-primary" title="Edytuj">
+                                           class="btn btn-sm btn-outline-primary" title="Edytuj">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form method="post" asp-page-handler="ToggleStatus" asp-route-id="@movie.MovieId"
                                               class="d-inline" onsubmit="return confirm('Czy na pewno chcesz zmienić status tego filmu?')">
-                                            <button type="submit" class="btn btn-outline-@(movie.IsActive ? "warning" : "success")"
+                                            <button type="submit" class="btn btn-sm btn-outline-@(movie.IsActive ? "warning" : "success")"
                                                     title="@(movie.IsActive ? "Dezaktywuj" : "Aktywuj")">
                                                 <i class="fas fa-@(movie.IsActive ? "eye-slash" : "eye")"></i>
                                             </button>
                                         </form>
                                         <form method="post" asp-page-handler="Delete" asp-route-id="@movie.MovieId"
                                               class="d-inline" onsubmit="return confirm('Czy na pewno chcesz usunąć ten film? Ta operacja jest nieodwracalna!')">
-                                            <button type="submit" class="btn btn-outline-danger" title="Usuń">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Usuń">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>

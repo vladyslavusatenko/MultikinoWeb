@@ -1,0 +1,225 @@
+﻿@page
+@model AdminUsersIndexModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Zarządzanie użytkownikami";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users me-2"></i>Zarządzanie użytkownikami</h2>
+</div>
+
+<!-- Statystyki -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3>@Model.Overview.TotalUsers</h3>
+                <p class="mb-0">Wszyscy użytkownicy</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h3>@Model.Overview.ActiveUsers</h3>
+                <p class="mb-0">Aktywni</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <h3>@Model.Overview.BannedUsers</h3>
+                <p class="mb-0">Zablokowani</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3>@Model.Overview.NewUsersToday</h3>
+                <p class="mb-0">Nowi dzisiaj</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtry -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input asp-for="SearchTerm" class="form-control" placeholder="Szukaj użytkownika..." />
+            </div>
+            <div class="col-md-3">
+                <select asp-for="StatusFilter" class="form-select">
+                    <option value="">Wszystkie statusy</option>
+                    <option value="true">Aktywni</option>
+                    <option value="false">Zablokowani</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select asp-for="RoleFilter" class="form-select">
+                    <option value="">Wszystkie role</option>
+                    <option value="User">Użytkownik</option>
+                    <option value="Admin">Administrator</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i>Szukaj
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista użytkowników -->
+<div class="card">
+    <div class="card-body">
+        @if (Model.Users.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Użytkownik</th>
+                            <th>Email</th>
+                            <th>Rola</th>
+                            <th>Status</th>
+                            <th>Statystyki</th>
+                            <th>Data rejestracji</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr class="@(user.IsActive ? "" : "table-secondary")">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar me-3">
+                                            <i class="fas fa-user-circle fa-2x @(user.Role == "Admin" ? "text-warning" : "text-primary")"></i>
+                                        </div>
+                                        <div>
+                                            <strong>@user.FirstName @user.LastName</strong>
+                                            @if (user.Role == "Admin")
+                                            {
+                                                <br>
+
+                                                <small class="badge bg-warning">ADMIN</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>
+                                    <span class="badge bg-@(user.Role == "Admin" ? "warning" : "secondary")">
+                                        @(user.Role == "Admin" ? "Administrator" : "Użytkownik")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge bg-success">Aktywny</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Zablokowany</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var bookings = user.Bookings.Where(b => b.Status == "Confirmed").ToList();
+                                        var totalSpent = bookings.Sum(b => b.TotalAmount);
+                                    }
+                                    <small>
+                                        <div><i class="fas fa-ticket-alt me-1"></i>@bookings.Count rezerwacji</div>
+                                        <div><i class="fas fa-coins me-1"></i>@totalSpent.ToString("C")</div>
+                                    </small>
+                                </td>
+                                <td>@user.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="/Admin/Users/Details" asp-route-id="@user.UserId"
+                                           class="btn btn-sm btn-outline-primary" title="Szczegóły">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        @if (user.Role != "Admin")
+                                        {
+                                            @if (user.IsActive)
+                                            {
+                                                <form method="post" asp-page-handler="Ban" asp-route-id="@user.UserId"
+                                                      class="d-inline" onsubmit="return confirm('Czy na pewno chcesz zablokować tego użytkownika?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning" title="Zablokuj">
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form method="post" asp-page-handler="Unban" asp-route-id="@user.UserId"
+                                                      class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Odblokuj">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            }
+
+                                            <form method="post" asp-page-handler="Delete" asp-route-id="@user.UserId"
+                                                  class="d-inline" onsubmit="return confirm('Czy na pewno chcesz usunąć tego użytkownika? Ta operacja jest nieodwracalna!')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Usuń">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Brak użytkowników</h4>
+                <p class="text-muted">Nie znaleziono użytkowników spełniających kryteria wyszukiwania.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Top spenders -->
+@if (Model.Overview.TopSpenders.Any())
+{
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5><i class="fas fa-crown me-2"></i>Najlepsi klienci</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var spender in Model.Overview.TopSpenders.Take(5))
+                {
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="user-avatar me-3">
+                                <i class="fas fa-medal fa-2x text-warning"></i>
+                            </div>
+                            <div>
+                                <strong>@spender.User.FirstName @spender.User.LastName</strong>
+                                <br>
+                                <span class="text-success">@spender.TotalSpent.ToString("C")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

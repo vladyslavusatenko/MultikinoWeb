@@ -363,3 +363,505 @@ if (window.location.hostname === 'localhost') {
 
 // Export colors for use in other scripts
 window.MULTIKINO_COLORS = COLORS;
+
+
+/**
+ * Multikino Particles Animation System
+ * Zaawansowany system animowanych cząsteczek dla strony głównej
+ */
+
+class MultikinoParticles {
+    // Znajdź constructor i zmień maxParticles:
+    constructor() {
+        this.particlesContainer = null;
+        this.heroContainer = null;
+        this.particleTypes = ['bubble', 'star', 'film-reel'];
+        this.maxParticles = 25; // ZMIANA: było 15, teraz 25
+        this.particleCreationInterval = 1500; // ZMIANA: było 2000, teraz 1500
+        this.heroParticleCount = 30; // ZMIANA: było 20, teraz 30
+        // reszta bez zmian...
+    
+        this.isInitialized = false;
+        this.animationId = null;
+
+        // Performance settings
+        this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.isMobile = window.innerWidth <= 768;
+
+        this.init();
+    }
+
+    init() {
+        if (this.isInitialized || this.reducedMotion) return;
+
+        this.createContainers();
+        this.createBackgroundParticles();
+        this.createHeroParticles();
+        this.setupEventListeners();
+        this.isInitialized = true;
+
+        console.log('Multikino Particles System initialized');
+    }
+
+    createContainers() {
+        // Create main particles container if it doesn't exist
+        if (!document.getElementById('particles-bg')) {
+            this.particlesContainer = document.createElement('div');
+            this.particlesContainer.id = 'particles-bg';
+            document.body.appendChild(this.particlesContainer);
+        } else {
+            this.particlesContainer = document.getElementById('particles-bg');
+        }
+
+        // Find or create hero particles container
+        const heroSection = document.querySelector('.hero-section');
+        if (heroSection) {
+            this.heroContainer = heroSection.querySelector('.hero-particles');
+            if (!this.heroContainer) {
+                this.heroContainer = document.createElement('div');
+                this.heroContainer.className = 'hero-particles';
+                heroSection.appendChild(this.heroContainer);
+            }
+        }
+    }
+
+    createBackgroundParticles() {
+        if (!this.particlesContainer || this.isMobile) return;
+
+        const createParticle = () => {
+            if (document.querySelectorAll('.particle').length >= this.maxParticles) return;
+
+            const particle = document.createElement('div');
+            const type = this.particleTypes[Math.floor(Math.random() * this.particleTypes.length)];
+
+            particle.className = `particle ${type}`;
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+
+            // Add special properties for different particle types
+            if (type === 'film-reel') {
+                particle.style.fontSize = '0.8rem';
+                particle.innerHTML = '🎬';
+                particle.style.background = 'transparent';
+                particle.style.border = 'none';
+            } else if (type === 'star') {
+                particle.innerHTML = '✨';
+                particle.style.background = 'transparent';
+                particle.style.fontSize = '0.6rem';
+            }
+
+            this.particlesContainer.appendChild(particle);
+
+            // Remove particle after animation completes
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 25000);
+        };
+
+        // Create particles at intervals
+        this.particleInterval = setInterval(createParticle, this.particleCreationInterval);
+
+        // Create initial batch
+        for (let i = 0; i < 3; i++) {
+            setTimeout(createParticle, i * 500);
+        }
+    }
+
+    createHeroParticles() {
+        if (!this.heroContainer) return;
+
+        // Clear existing particles
+        this.heroContainer.innerHTML = '';
+
+        const particleCount = this.isMobile ? 10 : this.heroParticleCount;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'hero-particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+
+            // Add occasional larger particles
+            if (Math.random() > 0.8) {
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.background = 'rgba(255, 255, 255, 0.5)';
+            }
+
+            this.heroContainer.appendChild(particle);
+        }
+    }
+
+    setupEventListeners() {
+        // Parallax effect for hero particles
+        let ticking = false;
+
+        const updateParallax = () => {
+            if (!this.heroContainer) return;
+
+            const scrolled = window.pageYOffset;
+            const heroParticles = this.heroContainer.querySelectorAll('.hero-particle');
+
+            heroParticles.forEach((particle, index) => {
+                const speed = (index % 3 + 1) * 0.3;
+                particle.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+
+            ticking = false;
+        };
+
+        const requestParallaxUpdate = () => {
+            if (!ticking) {
+                requestAnimationFrame(updateParallax);
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', requestParallaxUpdate, { passive: true });
+
+        // Handle resize events
+        window.addEventListener('resize', () => {
+            this.handleResize();
+        });
+
+        // Handle visibility change to pause/resume animations
+        document.addEventListener('visibilitychange', () => {
+            this.handleVisibilityChange();
+        });
+
+        // Handle reduced motion preference changes
+        const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        motionQuery.addListener((e) => {
+            if (e.matches) {
+                this.destroy();
+            } else {
+                this.init();
+            }
+        });
+    }
+
+    handleResize() {
+        const newIsMobile = window.innerWidth <= 768;
+
+        if (newIsMobile !== this.isMobile) {
+            this.isMobile = newIsMobile;
+
+            if (this.isMobile) {
+                // Remove particles on mobile for performance
+                this.removeAllParticles();
+            } else {
+                // Recreate particles on desktop
+                this.createBackgroundParticles();
+            }
+
+            // Recreate hero particles with appropriate count
+            this.createHeroParticles();
+        }
+    }
+
+    handleVisibilityChange() {
+        if (document.hidden) {
+            this.pauseAnimations();
+        } else {
+            this.resumeAnimations();
+        }
+    }
+
+    pauseAnimations() {
+        const particles = document.querySelectorAll('.particle, .hero-particle');
+        particles.forEach(particle => {
+            particle.style.animationPlayState = 'paused';
+        });
+
+        if (this.particleInterval) {
+            clearInterval(this.particleInterval);
+        }
+    }
+
+    resumeAnimations() {
+        const particles = document.querySelectorAll('.particle, .hero-particle');
+        particles.forEach(particle => {
+            particle.style.animationPlayState = 'running';
+        });
+
+        if (!this.isMobile && !this.reducedMotion) {
+            this.createBackgroundParticles();
+        }
+    }
+
+    removeAllParticles() {
+        if (this.particlesContainer) {
+            this.particlesContainer.innerHTML = '';
+        }
+
+        if (this.particleInterval) {
+            clearInterval(this.particleInterval);
+        }
+    }
+
+    addCustomParticle(type, x, y, options = {}) {
+        if (!this.particlesContainer || this.reducedMotion) return;
+
+        const particle = document.createElement('div');
+        particle.className = `particle ${type}`;
+        particle.style.left = x + '%';
+        particle.style.top = y + '%';
+
+        // Apply custom options
+        if (options.duration) {
+            particle.style.animationDuration = options.duration;
+        }
+        if (options.delay) {
+            particle.style.animationDelay = options.delay;
+        }
+        if (options.size) {
+            particle.style.width = options.size;
+            particle.style.height = options.size;
+        }
+
+        this.particlesContainer.appendChild(particle);
+
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+            }
+        }, 15000);
+    }
+
+    createBurstEffect(x, y, count = 5) {
+        if (this.reducedMotion) return;
+
+        for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+                this.addCustomParticle('star',
+                    x + (Math.random() - 0.5) * 10,
+                    y + (Math.random() - 0.5) * 10,
+                    {
+                        duration: '2s',
+                        delay: Math.random() * 0.5 + 's',
+                        size: '12px'
+                    }
+                );
+            }, i * 100);
+        }
+    }
+
+    destroy() {
+        this.removeAllParticles();
+
+        if (this.particleInterval) {
+            clearInterval(this.particleInterval);
+        }
+
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
+
+        // Remove containers
+        if (this.particlesContainer && this.particlesContainer.parentNode) {
+            this.particlesContainer.parentNode.removeChild(this.particlesContainer);
+        }
+
+        this.isInitialized = false;
+        console.log('Multikino Particles System destroyed');
+    }
+}
+
+// Counter Animation Class
+class CounterAnimation {
+    constructor() {
+        this.observers = [];
+        this.init();
+    }
+
+    init() {
+        this.setupCounters();
+    }
+
+    setupCounters() {
+        const counters = document.querySelectorAll('.stat-counter');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.dataset.animated) {
+                    this.animateCounter(entry.target);
+                    entry.target.dataset.animated = 'true';
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+
+        this.observers.push(observer);
+    }
+
+    animateCounter(counter) {
+        const target = parseFloat(counter.getAttribute('data-count'));
+        const duration = 2000; // 2 seconds
+        const increment = target / (duration / 16); // 60fps
+        let current = 0;
+
+        const updateCounter = () => {
+            if (current < target) {
+                current += increment;
+                if (target > 100) {
+                    counter.textContent = Math.floor(current).toLocaleString();
+                } else {
+                    counter.textContent = (Math.floor(current * 10) / 10).toFixed(1);
+                }
+                requestAnimationFrame(updateCounter);
+            } else {
+                if (target > 100) {
+                    counter.textContent = Math.floor(target).toLocaleString();
+                } else {
+                    counter.textContent = target.toFixed(1);
+                }
+            }
+        };
+
+        updateCounter();
+    }
+
+    destroy() {
+        this.observers.forEach(observer => observer.disconnect());
+        this.observers = [];
+    }
+}
+
+// Page Animation Controller
+class PageAnimations {
+    constructor() {
+        this.observers = [];
+        this.init();
+    }
+
+    init() {
+        this.setupScrollAnimations();
+        this.setupInteractiveElements();
+    }
+
+    setupScrollAnimations() {
+        const animatedElements = document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    entry.target.style.opacity = '1';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        animatedElements.forEach(el => {
+            el.style.animationPlayState = 'paused';
+            el.style.opacity = '0';
+            observer.observe(el);
+        });
+
+        this.observers.push(observer);
+    }
+
+    setupInteractiveElements() {
+        // Screening time click effects
+        document.querySelectorAll('.screening-time').forEach(time => {
+            time.addEventListener('click', this.createClickEffect.bind(this));
+        });
+
+        // Card hover effects
+        document.querySelectorAll('.movie-card').forEach(card => {
+            card.addEventListener('mouseenter', this.enhanceCardHover.bind(this));
+        });
+    }
+
+    createClickEffect(event) {
+        const element = event.target;
+        element.style.transform = 'scale(0.95)';
+
+        setTimeout(() => {
+            element.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                element.style.transform = 'scale(1)';
+            }, 150);
+        }, 150);
+
+        // Create burst effect if particles are available
+        if (window.multikinoParticles) {
+            const rect = element.getBoundingClientRect();
+            const x = ((rect.left + rect.width / 2) / window.innerWidth) * 100;
+            const y = ((rect.top + rect.height / 2) / window.innerHeight) * 100;
+            window.multikinoParticles.createBurstEffect(x, y, 3);
+        }
+    }
+
+    enhanceCardHover(event) {
+        const card = event.target.closest('.movie-card');
+        if (!card) return;
+
+        // Add subtle glow effect
+        card.style.boxShadow = '0 15px 40px rgba(74, 111, 165, 0.25), 0 0 0 1px rgba(74, 111, 165, 0.1)';
+    }
+
+    destroy() {
+        this.observers.forEach(observer => observer.disconnect());
+        this.observers = [];
+    }
+}
+
+// Newsletter functionality
+function subscribeNewsletter() {
+    const email = document.getElementById('newsletterEmail');
+    if (!email) return;
+
+    const emailValue = email.value.trim();
+    if (emailValue && emailValue.includes('@')) {
+        // Show success message
+        showAlert('Dziękujemy za zapisanie się do newslettera!', 'success');
+        email.value = '';
+
+        // Create celebration effect
+        if (window.multikinoParticles) {
+            window.multikinoParticles.createBurstEffect(50, 30, 8);
+        }
+    } else {
+        showAlert('Proszę wprowadzić prawidłowy adres email.', 'warning');
+    }
+}
+
+// Global initialization
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize all systems
+    try {
+        window.multikinoParticles = new MultikinoParticles();
+        window.counterAnimation = new CounterAnimation();
+        window.pageAnimations = new PageAnimations();
+
+        console.log('All Multikino animation systems loaded successfully');
+    } catch (error) {
+        console.warn('Error initializing Multikino animations:', error);
+    }
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function () {
+    if (window.multikinoParticles) {
+        window.multikinoParticles.destroy();
+    }
+    if (window.counterAnimation) {
+        window.counterAnimation.destroy();
+    }
+    if (window.pageAnimations) {
+        window.pageAnimations.destroy();
+    }
+});
+
+// Export for external use
+window.MultikinoParticles = MultikinoParticles;
+window.CounterAnimation = CounterAnimation;
+window.PageAnimations = PageAnimations;

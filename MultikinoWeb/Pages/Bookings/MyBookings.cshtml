@@ -31,11 +31,13 @@ else
                         <div class="card-header @(booking.Status == "Cancelled" ? "bg-danger" : "bg-success") text-white">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">Rezerwacja #@booking.BookingId</h6>
-                                <span class="badge bg-white
-                                    @(booking.Status == "Confirmed" ? "text-success" :
-                                      booking.Status == "Cancelled" ? "text-danger" : "text-warning")">
+                                <!-- Znajdź badge z statusem i zamień na: -->
+                                <span class="badge bg-@(booking.Status == "Confirmed" ? "success" :
+                        booking.Status == "Cancelled" ? "danger" :
+                        booking.Status == "Completed" ? "info" : "warning")">
                                     @(booking.Status == "Confirmed" ? "Potwierdzona" :
                                         booking.Status == "Cancelled" ? "Anulowana" :
+                                        booking.Status == "Completed" ? "Zakończona" :
                                         booking.Status == "Pending" ? "Oczekująca" : booking.Status)
                                 </span>
                             </div>

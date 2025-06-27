@@ -4,37 +4,165 @@
     ViewData["Title"] = "Strona główna";
 }
 
-<div class="hero-section bg-primary text-white p-5 mb-4 rounded">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold">Witaj w Multikinie</h1>
-                <p class="lead">Odkryj najnowsze filmy i zarezerwuj bilety online w najlepszych cenach!</p>
-                <a asp-page="/Movies/Index" class="btn btn-light btn-lg">
-                    <i class="fas fa-ticket-alt me-2"></i>Zobacz repertuar
+<!-- Animated Particles Background -->
+<div id="particles-bg"></div>
+
+<!-- Hero Section z animowanymi cząsteczkami -->
+<div class="hero-section p-5 mb-5 fade-in-up">
+    <div class="hero-particles"></div>
+    <div class="row align-items-center position-relative">
+        <div class="col-lg-8">
+            <h1 class="display-4 fw-bold">Witaj w Multikinie</h1>
+            <p class="lead mb-4">Najlepsze filmy, najwygodniejsze miejsca, niezapomniane wrażenia!</p>
+            <div class="d-flex flex-wrap gap-3">
+                <a asp-page="/Movies/Index" class="btn btn-custom">
+                    <i class="fas fa-ticket-alt me-2"></i>Kup bilet online
                 </a>
+                @* <a asp-page="/Movies/Index" class="btn btn-outline-light"> *@
+                @*     <i class="fas fa-calendar me-2"></i>Zobacz repertuar *@
+                @* </a> *@
             </div>
-            <div class="col-lg-6 text-center">
-                <i class="fas fa-film" style="font-size: 8rem; opacity: 0.3;"></i>
+        </div>
+        <div class="col-lg-4 text-center">
+            <i class="fas fa-film" style="font-size: 8rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Statystyki z licznikami -->
+<div class="row mb-5 fade-in-up">
+    <div class="col-md-3 text-center mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-film"></i>
+                </div>
+                <div class="stat-counter" data-count="@Model.TotalMovies">0</div>
+                <p class="text-muted">Filmów w ofercie</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-couch"></i>
+                </div>
+                <div class="stat-counter" data-count="@Model.TotalHalls">0</div>
+                <p class="text-muted">Sal kinowych</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-counter" data-count="@Model.TotalUsers">0</div>
+                <p class="text-muted">Zadowolonych klientów</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <!-- Znajdź sekcję z stat-counter i zmień: -->
+                <div class="stat-counter" data-count="@Math.Round(Model.AverageRating)">0</div>
+                <p class="text-muted">Średnia ocena filmów</p>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h2 class="mb-4">
-                <i class="fas fa-star text-warning me-2"></i>Obecnie w kinach
+<!-- Najbliższe seanse -->
+@if (Model.TodayScreenings.Any())
+{
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="section-title text-center fade-in-up">
+                <i class="fas fa-clock text-primary me-2"></i>Dzisiejsze seanse
             </h2>
+            @foreach (var screening in Model.TodayScreenings.Take(3))
+            {
+                <div class="card fade-in-left mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                @if (screening.Movie.Poster != null)
+                                {
+                                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(screening.Movie.Poster)"
+                                         alt="@screening.Movie.Title" class="img-fluid rounded" style="max-height: 120px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 120px; width: 80px;">
+                                        <i class="fas fa-film fa-2x text-muted"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <h5>@screening.Movie.Title</h5>
+                                <p class="text-muted mb-2">@screening.Movie.Genre • @screening.Movie.Duration min • Reż. @screening.Movie.Director</p>
+                                <div class="rating-stars mb-2">
+                                    @{
+                                        var fullStars = (int)Math.Floor(screening.Movie.Rating);
+                                        var hasHalfStar = screening.Movie.Rating % 1 >= 0.5m;
+                                    }
+                                    @for (int i = 0; i < fullStars; i++)
+                                    {
+                                        <i class="fas fa-star text-warning"></i>
+                                    }
+                                    @if (hasHalfStar)
+                                    {
+                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    }
+                                    <span class="ms-2">@screening.Movie.Rating/10</span>
+                                </div>
+                                <div>
+                                    <span class="screening-time">@screening.StartTime.ToString("HH:mm")</span>
+                                    <span class="badge bg-info ms-2">@screening.Hall.HallName</span>
+                                    <span class="badge bg-success ms-2">@screening.TicketPrice.ToString("C")</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <p class="mb-2">
+                                    <strong>Dostępne miejsca:</strong> 
+                                    <span class="badge bg-@(screening.AvailableSeats > 20 ? "success" : screening.AvailableSeats > 5 ? "warning" : "danger")">
+                                        @screening.AvailableSeats / @screening.Hall.Capacity
+                                    </span>
+                                </p>
+                                <a asp-page="/Bookings/Create" asp-route-screeningId="@screening.ScreeningId" class="btn btn-custom">
+                                    <i class="fas fa-ticket-alt me-1"></i>Rezerwuj
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
+}
 
-    <div class="row">
-        @foreach (var movie in Model.CurrentMovies)
-        {
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card h-100 shadow-sm movie-card">
+<!-- Popularne filmy tego tygodnia -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="section-title text-center fade-in-up">
+            <i class="fas fa-fire text-danger me-2"></i>Obecnie w kinach
+        </h2>
+    </div>
+    @foreach (var movie in Model.CurrentMovies.Take(3))
+    {
+        <div class="col-md-4 mb-4 fade-in-up">
+            <div class="card h-100 movie-card">
+                <div class="position-relative">
+                    @if (movie.ReleaseDate > DateTime.Now.AddDays(-30))
+                    {
+                        <div class="coming-soon-badge">NOWOŚĆ</div>
+                    }
                     @if (movie.Poster != null)
                     {
                         <img src="data:image/jpeg;base64,@Convert.ToBase64String(movie.Poster)"
@@ -43,64 +171,263 @@
                     else
                     {
                         <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
-                            <i class="fas fa-film fa-3x text-muted"></i>
+                            <i class="fas fa-film fa-4x text-muted"></i>
                         </div>
                     }
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">@movie.Title</h5>
-                        <p class="card-text flex-grow-1">@movie.Description</p>
-                        <div class="movie-details mb-3">
-                            <small class="text-muted">
-                                <i class="fas fa-clock me-1"></i>@movie.Duration min |
-                                <i class="fas fa-tags me-1"></i>@movie.Genre |
-                                <i class="fas fa-star text-warning me-1"></i>@movie.Rating/10
-                            </small>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">@movie.Title</h5>
+                    <p class="card-text flex-grow-1">
+                        @(movie.Description.Length > 100 ? movie.Description.Substring(0, 100) + "..." : movie.Description)
+                    </p>
+                    <div class="movie-info mb-3">
+                        <small class="text-muted">
+                            <div><i class="fas fa-clock me-1"></i><strong>Czas:</strong> @movie.Duration min</div>
+                            <div><i class="fas fa-tags me-1"></i><strong>Gatunek:</strong> @movie.Genre</div>
+                            <div><i class="fas fa-user-tie me-1"></i><strong>Reżyser:</strong> @movie.Director</div>
+                            <div><i class="fas fa-star text-warning me-1"></i><strong>Ocena:</strong> @movie.Rating/10</div>
+                        </small>
+                    </div>
+                    <a asp-page="/Movies/Details" asp-route-id="@movie.MovieId" class="btn btn-primary mt-auto">
+                        <i class="fas fa-ticket-alt me-1"></i>Zobacz seanse
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Nasze sale -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="section-title text-center fade-in-up">
+            <i class="fas fa-couch text-success me-2"></i>Nasze sale
+        </h2>
+    </div>
+    @foreach (var hall in Model.CinemaHalls.Take(4))
+    {
+        <div class="col-md-6 mb-4 fade-in-@(Model.CinemaHalls.ToList().IndexOf(hall) % 2 == 0 ? "left" : "right")">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-4">
+                            <div class="feature-icon" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                <i class="fas fa-@(hall.HallType == "IMAX" ? "tv" : hall.HallType == "VIP" ? "crown" : "couch")"></i>
+                            </div>
                         </div>
-                        <a asp-page="/Movies/Details" asp-route-id="@movie.MovieId" class="btn btn-primary">
-                            <i class="fas fa-info-circle me-1"></i>Zobacz seanse
-                        </a>
+                        <div class="col-8">
+                            <h5>@hall.HallName</h5>
+                            <p class="text-muted mb-1">@hall.Capacity miejsc</p>
+                            <p class="text-muted mb-0">@hall.HallType</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        }
-    </div>
-
-    @if (!Model.CurrentMovies.Any())
-    {
-        <div class="text-center py-5">
-            <i class="fas fa-film fa-3x text-muted mb-3"></i>
-            <h3 class="text-muted">Brak dostępnych filmów</h3>
-            <p class="text-muted">Sprawdź ponownie wkrótce!</p>
         </div>
     }
+</div>
 
-    <div class="row mt-5">
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="fas fa-couch fa-3x text-primary mb-3"></i>
-                    <h5 class="card-title">Komfortowe sale</h5>
-                    <p class="card-text">Nowoczesne sale kinowe z najlespszym dźwiękiem i obrazem.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="fas fa-mobile-alt fa-3x text-success mb-3"></i>
-                    <h5 class="card-title">Rezerwacja online</h5>
-                    <p class="card-text">Szybka i łatwa rezerwacja biletów przez internet.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="fa-solid fa-cookie-bite fa-3x text-warning mb-3"></i>
-                    <h5 class="card-title">Przekąski</h5>
-                    <p class="card-text">Szeroki wybór przekąsek i napojów w atrakcyjnych cenach.</p>
-                </div>
+<!-- Newsletter -->
+<div class="newsletter-section p-5 rounded-3 text-center mb-5 fade-in-up">
+    <h3 class="mb-3 text-white">
+        <i class="fas fa-envelope me-2"></i>Bądź na bieżąco!
+    </h3>
+    <p class="mb-4">Zapisz się do naszego newslettera i otrzymuj informacje o premierach i promocjach</p>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="email" class="form-control" placeholder="Twój adres email" id="newsletterEmail">
+                <button class="btn btn-custom" onclick="subscribeNewsletter()">Zapisz się</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Korzyści -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="section-title text-center fade-in-up">
+            <i class="fas fa-gift text-warning me-2"></i>Dlaczego Multikino?
+        </h2>
+    </div>
+    <div class="col-md-4 text-center mb-4 fade-in-up">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h5>Rezerwacja online</h5>
+                <p class="text-muted">Szybka i łatwa rezerwacja biletów przez internet 24/7</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-4 fade-in-up" style="animation-delay: 0.2s;">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-cookie-bite"></i>
+                </div>
+                <h5>Bufet kinowy</h5>
+                <p class="text-muted">Szeroki wybór przekąsek i napojów w atrakcyjnych cenach</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-4 fade-in-up" style="animation-delay: 0.4s;">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="feature-icon">
+                    <i class="fas fa-parking"></i>
+                </div>
+                <h5>Darmowy parking</h5>
+                <p class="text-muted">Bezpłatne miejsca parkingowe dla wszystkich klientów</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Particles animation
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles-bg');
+            const particleTypes = ['bubble', 'star', 'film-reel'];
+            
+            setInterval(() => {
+                if (document.querySelectorAll('.particle').length < 15) {
+                    const particle = document.createElement('div');
+                    const type = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+                    
+                    particle.className = `particle ${type}`;
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    
+                    particlesContainer.appendChild(particle);
+                    
+                    // Remove particle after animation
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 25000);
+                }
+            }, 2000);
+        }
+
+        // Hero particles
+        function createHeroParticles() {
+            const heroContainer = document.querySelector('.hero-particles');
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'hero-particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                
+                heroContainer.appendChild(particle);
+            }
+        }
+
+        // Counter animation
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-counter');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        const target = parseFloat(counter.getAttribute('data-count'));
+                        const increment = target / 100;
+                        let current = 0;
+                        
+                        const updateCounter = () => {
+                            if (current < target) {
+                                current += increment;
+                                if (target > 100) {
+                                    counter.textContent = Math.floor(current).toLocaleString();
+                                } else {
+                                    counter.textContent = (Math.floor(current * 10) / 10).toFixed(1);
+                                }
+                                requestAnimationFrame(updateCounter);
+                            } else {
+                                if (target > 100) {
+                                    counter.textContent = Math.floor(target).toLocaleString();
+                                } else {
+                                    counter.textContent = target.toFixed(1);
+                                }
+                            }
+                        };
+                        
+                        updateCounter();
+                        observer.unobserve(counter);
+                    }
+                });
+            });
+            
+            counters.forEach(counter => observer.observe(counter));
+        }
+
+        // Intersection Observer for animations
+        function setupAnimations() {
+            const animatedElements = document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            animatedElements.forEach(el => {
+                el.style.animationPlayState = 'paused';
+                observer.observe(el);
+            });
+        }
+
+        // Newsletter subscription
+        function subscribeNewsletter() {
+            const email = document.getElementById('newsletterEmail').value;
+            if (email && email.includes('@@')) {
+                showAlert('Dziękujemy za zapisanie się do newslettera!', 'success');
+                document.getElementById('newsletterEmail').value = '';
+            } else {
+                showAlert('Proszę wprowadzić prawidłowy adres email.', 'warning');
+            }
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            createHeroParticles();
+            animateCounters();
+            setupAnimations();
+            
+            // Add click effects to screening times
+            document.querySelectorAll('.screening-time').forEach(time => {
+                time.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1.05)';
+                        setTimeout(() => {
+                            this.style.transform = 'scale(1)';
+                        }, 150);
+                    }, 150);
+                });
+            });
+        });
+
+        // Parallax effect for hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroParticles = document.querySelectorAll('.hero-particle');
+            
+            heroParticles.forEach((particle, index) => {
+                const speed = (index % 3 + 1) * 0.5;
+                particle.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+    </script>
+}

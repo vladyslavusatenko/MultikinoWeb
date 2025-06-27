@@ -107,17 +107,18 @@
                                 <td>
                                     <strong class="text-success">@revenue.ToString("C")</strong>
                                 </td>
+                                <!-- Znajdź sekcję <td> z akcjami i zamień na: -->
                                 <td>
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="btn-group" role="group">
                                         <a asp-page="/Admin/Screenings/Edit" asp-route-id="@screening.ScreeningId"
-                                           class="btn btn-outline-primary" title="Edytuj">
+                                           class="btn btn-sm btn-outline-primary" title="Edytuj">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         @if (screening.StartTime > DateTime.Now)
                                         {
                                             <form method="post" asp-page-handler="Delete" asp-route-id="@screening.ScreeningId"
                                                   class="d-inline" onsubmit="return confirm('Czy na pewno chcesz usunąć ten seans?')">
-                                                <button type="submit" class="btn btn-outline-danger" title="Usuń">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Usuń">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>

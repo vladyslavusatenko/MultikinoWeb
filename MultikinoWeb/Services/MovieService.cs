@@ -15,7 +15,10 @@ namespace MultikinoWeb.Services
 
         public async Task<IEnumerable<Movie>> GetAllMoviesAsync()
         {
-            return await _context.Movies.OrderBy(m => m.Title).ToListAsync();
+            return await _context.Movies
+                .Include(m => m.Screenings) // DODAJ tę linię
+                .OrderBy(m => m.Title)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Movie>> GetActiveMoviesAsync()

@@ -1,0 +1,137 @@
+﻿@page "{id:int}"
+@model UserDetailsModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Szczegóły użytkownika";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-circle me-2"></i>Szczegóły użytkownika</h2>
+    <a asp-page="/Admin/Users/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Powrót do listy
+    </a>
+</div>
+
+@if (Model.UserStats.User != null)
+{
+    <div class="row">
+        <!-- Podstawowe informacje -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-user me-2"></i>Informacje podstawowe</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="user-avatar-large mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    <h4>@Model.UserStats.User.FirstName @Model.UserStats.User.LastName</h4>
+                    <p class="text-muted">@Model.UserStats.User.Email</p>
+
+                    <div class="mb-3">
+                        <span class="badge bg-@(Model.UserStats.User.Role == "Admin" ? "warning" : "secondary") fs-6">
+                            @(Model.UserStats.User.Role == "Admin" ? "Administrator" : "Użytkownik")
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        @if (Model.UserStats.User.IsActive)
+                        {
+                            <span class="badge bg-success fs-6">Aktywny</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger fs-6">Zablokowany</span>
+                        }
+                    </div>
+
+                    <p><strong>Data rejestracji:</strong><br>@Model.UserStats.User.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statystyki -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Statystyki użytkownika</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-4">
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-primary">@Model.UserStats.TotalBookings</h3>
+                                <p class="text-muted">Rezerwacje</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-success">@Model.UserStats.TotalSpent.ToString("C")</h3>
+                                <p class="text-muted">Wydano</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-warning">@Model.UserStats.TotalTickets</h3>
+                                <p class="text-muted">Bilety</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-info">@Model.UserStats.FavoriteGenre</h3>
+                                <p class="text-muted">Ulubiony gatunek</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.UserStats.LastBookingDate.HasValue)
+                    {
+                        <p><strong>Ostatnia rezerwacja:</strong> @Model.UserStats.LastBookingDate.Value.ToString("dd.MM.yyyy HH:mm")</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Ostatnie rezerwacje -->
+            @if (Model.UserStats.RecentBookings.Any())
+            {
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6><i class="fas fa-ticket-alt me-2"></i>Ostatnie rezerwacje</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Film</th>
+                                        <th>Data seansu</th>
+                                        <th>Bilety</th>
+                                        <th>Kwota</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var booking in Model.UserStats.RecentBookings)
+                                    {
+                                        <tr>
+                                            <td>@booking.Screening.Movie.Title</td>
+                                            <td>@booking.Screening.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td>@booking.NumberOfTickets</td>
+                                            <td>@booking.TotalAmount.ToString("C")</td>
+                                            <td>
+                                                <span class="badge bg-@(booking.Status == "Confirmed" ? "success" : booking.Status == "Cancelled" ? "danger" : "warning")">
+                                                    @booking.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
