@@ -28,7 +28,11 @@ html {
 body {
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, var(--alice-blue) 0%, var(--columbia-blue) 100%);
+    /* Jednolite gradientowe tło bez przerwań */
+    background: linear-gradient(135deg, var(--alice-blue) 0%, var(--columbia-blue) 50%, var(--alice-blue) 100%);
+    background-attachment: fixed; /* Tło pozostaje w miejscu podczas przewijania */
+    background-repeat: no-repeat;
+    background-size: cover;
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     display: flex;
