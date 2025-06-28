@@ -1,0 +1,98 @@
+﻿@page "{id:int}"
+@model AdminScreeningsEditModel
+@using MultikinoWeb.Filters
+@attribute [AdminAuthorization]
+@{
+    ViewData["Title"] = "Edytuj seans";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3><i class="fas fa-edit me-2"></i>Edytuj seans</h3>
+            </div>
+            <div class="card-body">
+                @if (Model.Screening.Bookings.Any(b => b.Status == "Confirmed"))
+                {
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Uwaga:</strong> Ten seans ma już @Model.Screening.Bookings.Count(b => b.Status == "Confirmed") potwierdzonych rezerwacji.
+                        Zmiany mogą wpłynąć na klientów.
+                    </div>
+                }
+
+                <form method="post" id="editScreeningForm">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ScreeningData.MovieId" class="form-label">
+                                    <i class="fas fa-film me-1"></i>Film
+                                </label>
+                                <select asp-for="ScreeningData.MovieId" class="form-select">
+                                    <option value="">-- Wybierz film --</option>
+                                    @foreach (var movie in Model.ScreeningData.Movies)
+                                    {
+                                        <option value="@movie.MovieId">@movie.Title (@movie.Duration min)</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ScreeningData.MovieId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ScreeningData.HallId" class="form-label">
+                                    <i class="fas fa-couch me-1"></i>Sala
+                                </label>
+                                <select asp-for="ScreeningData.HallId" class="form-select">
+                                    <option value="">-- Wybierz salę --</option>
+                                    @foreach (var hall in Model.ScreeningData.Halls)
+                                    {
+                                        <option value="@hall.HallId">@hall.HallName (@hall.Capacity miejsc)</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ScreeningData.HallId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ScreeningData.StartTime" class="form-label">
+                                    <i class="fas fa-clock me-1"></i>Data i godzina rozpoczęcia
+                                </label>
+                                <input asp-for="ScreeningData.StartTime" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="ScreeningData.StartTime" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ScreeningData.TicketPrice" class="form-label">
+                                    <i class="fas fa-money-bill me-1"></i>Cena biletu (PLN)
+                                </label>
+                                <input asp-for="ScreeningData.TicketPrice" class="form-control" type="number" step="0.01" min="0" />
+                                <span asp-validation-for="ScreeningData.TicketPrice" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-page="/Admin/Screenings/Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Anuluj
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Zapisz zmiany
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

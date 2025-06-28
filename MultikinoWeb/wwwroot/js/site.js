@@ -343,10 +343,7 @@ if (window.location.hostname === 'localhost') {
 window.MULTIKINO_COLORS = COLORS;
 
 
-/**
- * Multikino Particles Animation System
- * Zaawansowany system animowanych cząsteczek dla strony głównej
- */
+
 
 class MultikinoParticles {
     constructor() {

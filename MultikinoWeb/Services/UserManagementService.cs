@@ -106,16 +106,20 @@ namespace MultikinoWeb.Services
         {
             var user = await _context.Users
                 .Include(u => u.Bookings)
+                .ThenInclude(b => b.Screening)  // Add this line
                 .FirstOrDefaultAsync(u => u.UserId == userId);
 
-            if (user == null || user.Role == "Admin") return false;
+            if (user == null || user.Role == "Admin")
+                return false;
 
             var hasActiveBookings = user.Bookings.Any(b =>
-                b.Status == "Confirmed" && b.Screening.StartTime > DateTime.Now);
+                b.Status == "Confirmed" &&
+                b.Screening != null && // Extra null check for safety
+                b.Screening.StartTime > DateTime.Now);
 
             if (hasActiveBookings)
             {
-                return false; // Nie można usunąć użytkownika z aktywnymi rezerwacjami
+                return false; // Cannot delete user with active bookings
             }
 
             _context.Users.Remove(user);

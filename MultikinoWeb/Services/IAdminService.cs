@@ -26,5 +26,8 @@ namespace MultikinoWeb.Services
 
         Task<SystemSettingsViewModel> GetSystemSettingsAsync();
         Task<bool> UpdateSystemSettingsAsync(SystemSettingsViewModel model);
+
+        Task<bool> UpdateScreeningAsync(int screeningId, EditScreeningViewModel screeningData);
+
     }
 }

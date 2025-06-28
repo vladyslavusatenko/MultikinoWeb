@@ -1,11 +1,9 @@
-﻿/* Color Palette Variables */
-:root {
+﻿:root {
     --paynes-gray: #4f6d7a;
     --columbia-blue: #c0d6df;
     --alice-blue: #dbe9ee;
     --true-blue: #4a6fa5;
     --lapis-lazuli: #166088;
-    /* Additional shades for better UI */
     --paynes-gray-light: #6b8490;
     --paynes-gray-dark: #3d5560;
     --true-blue-light: #6b89c0;
@@ -28,9 +26,8 @@ html {
 body {
     margin: 0;
     padding: 0;
-    /* Jednolite gradientowe tło bez przerwań */
     background: linear-gradient(135deg, var(--alice-blue) 0%, var(--columbia-blue) 50%, var(--alice-blue) 100%);
-    background-attachment: fixed; /* Tło pozostaje w miejscu podczas przewijania */
+    background-attachment: fixed; 
     background-repeat: no-repeat;
     background-size: cover;
     min-height: 100vh;
@@ -48,7 +45,6 @@ body {
     flex: 1;
 }
 
-/* Navigation */
 .navbar {
     background: linear-gradient(135deg, var(--paynes-gray) 0%, var(--paynes-gray-dark) 100%) !important;
     backdrop-filter: blur(10px);
@@ -60,7 +56,6 @@ body {
     color: #fff !important;
 }
 
-/* Dropdown z poprawnym z-index */
 .navbar .dropdown-menu {
     z-index: 9999 !important;
     background: rgba(255, 255, 255, 0.95);
@@ -79,7 +74,6 @@ body {
         color: var(--lapis-lazuli) !important;
     }
 
-/* Cards Enhancement */
 .card {
     border: none;
     border-radius: 15px;
@@ -95,7 +89,6 @@ body {
         box-shadow: 0 8px 25px rgba(79, 109, 122, 0.15);
     }
 
-/* Movie Cards - Fixed height for consistent layout */
 .movie-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
@@ -129,7 +122,6 @@ body {
         margin-top: auto;
     }
 
-/* Buttons */
 .btn {
     border-radius: 10px;
     font-weight: 500;
@@ -199,7 +191,7 @@ body {
         border-color: var(--paynes-gray) !important;
     }
 
-/* Hero Section */
+
 .hero-section {
     background: linear-gradient(135deg, var(--true-blue) 0%, var(--lapis-lazuli) 100%);
     border-radius: 20px;
@@ -214,12 +206,12 @@ body {
         text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
     }
 
-/* Container dla głównej treści */
+
 .container main {
     flex: 1;
 }
 
-/* Footer - zawsze na dole */
+
 .footer {
     background: linear-gradient(135deg, var(--paynes-gray) 0%, var(--paynes-gray-dark) 100%) !important;
     color: white !important;
@@ -233,7 +225,6 @@ body {
         color: white !important;
     }
 
-/* Alerts */
 .alert {
     border: none;
     border-radius: 15px;
@@ -286,7 +277,6 @@ body {
         color: #664d03 !important;
     }
 
-/* Forms */
 .form-control {
     border-radius: 10px;
     border: 2px solid var(--columbia-blue);
@@ -311,7 +301,6 @@ body {
     color: var(--paynes-gray) !important;
 }
 
-/* Text colors for better contrast */
 .text-muted {
     color: var(--paynes-gray-light) !important;
 }
@@ -328,7 +317,6 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--paynes-gray) !important;
 }
 
-/* Fix gray text readability */
 small.text-muted {
     color: var(--paynes-gray-light) !important;
     font-weight: 500;
@@ -340,7 +328,6 @@ small.text-muted {
     color: var(--paynes-gray-light) !important;
 }
 
-/* Seat Map Styles */
 .seat-map {
     background: linear-gradient(135deg, var(--alice-blue) 0%, rgba(255, 255, 255, 0.95) 100%);
     border-radius: 15px;
@@ -530,7 +517,6 @@ small.text-muted {
         color: var(--paynes-gray) !important;
     }
 
-/* General text contrast improvements */
 .card.bg-primary,
 .card.bg-success,
 .card.bg-info,
@@ -557,7 +543,6 @@ small.text-muted {
         color: #212529 !important;
     }
 
-/* Button text contrast */
 .btn-primary,
 .btn-success,
 .btn-info,
@@ -572,7 +557,6 @@ small.text-muted {
     color: #212529 !important;
 }
 
-/* Table improvements */
 .table-light {
     background: var(--alice-blue) !important;
     color: var(--paynes-gray) !important;
@@ -592,7 +576,6 @@ small.text-muted {
         color: var(--paynes-gray) !important;
     }
 
-/* Status text improvements */
 .status-confirmed {
     color: var(--lapis-lazuli) !important;
     font-weight: 600;
@@ -608,7 +591,6 @@ small.text-muted {
     font-weight: 600;
 }
 
-/* Specific fixes for cards with colored backgrounds */
 .card.bg-primary .card-body,
 .card.bg-success .card-body,
 .card.bg-info .card-body {
@@ -630,7 +612,6 @@ small.text-muted {
         color: white !important;
     }
 
-/* Ensure text visibility in navbar */
 .navbar-dark .navbar-nav .nav-link {
     color: white !important;
 }
@@ -643,7 +624,6 @@ small.text-muted {
     color: white !important;
 }
 
-/* Loading Animation */
 .loading {
     display: inline-block;
     width: 20px;
@@ -660,7 +640,6 @@ small.text-muted {
     }
 }
 
-/* Custom Bootstrap overrides with improved text contrast */
 .bg-primary {
     background: linear-gradient(135deg, var(--true-blue) 0%, var(--true-blue-dark) 100%) !important;
     color: white !important;
@@ -723,7 +702,6 @@ small.text-muted {
     color: var(--true-blue) !important;
 }
 
-/* Card headers with new colors and proper contrast */
 .card-header.bg-primary {
     background: linear-gradient(135deg, var(--true-blue) 0%, var(--true-blue-dark) 100%) !important;
     color: white !important;
@@ -768,7 +746,6 @@ small.text-muted {
         color: #212529 !important;
     }
 
-/* Progress bars */
 .progress-bar {
     background: linear-gradient(135deg, var(--true-blue) 0%, var(--lapis-lazuli) 100%) !important;
 }
@@ -777,7 +754,6 @@ small.text-muted {
         background: linear-gradient(135deg, var(--lapis-lazuli) 0%, var(--lapis-lazuli-dark) 100%) !important;
     }
 
-/* Badges */
 .badge.bg-success {
     background: var(--lapis-lazuli) !important;
     color: white !important;
@@ -796,7 +772,6 @@ small.text-muted {
     background: var(--paynes-gray) !important;
 }
 
-/* Tables */
 .table-light {
     background: var(--alice-blue) !important;
     color: var(--paynes-gray) !important;
@@ -806,7 +781,6 @@ small.text-muted {
     background: var(--alice-blue) !important;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .main-container {
         margin: 0;
@@ -868,7 +842,6 @@ small.text-muted {
     }
 }
 
-/* Animacje ładowania */
 .seat-map.loading .seat {
     animation: fadeInUp 0.5s ease forwards;
 }
@@ -885,14 +858,12 @@ small.text-muted {
     }
 }
 
-/* Style dla temp alertów */
 .temp-alert {
     position: relative;
     z-index: 1065 !important;
     margin-bottom: 1rem;
 }
 
-/* Specific badge colors */
 .badge.bg-white.text-success {
     color: var(--lapis-lazuli) !important;
 }
@@ -905,7 +876,6 @@ small.text-muted {
     color: #856404 !important;
 }
 
-/* Zapewnienie że main zajmuje całą dostępną przestrzeń */
 html, body {
     height: 100%;
 }
@@ -925,12 +895,7 @@ main {
     flex: 1;
 }
 
-/* 
-   Utility Classes for Multikino Color Palette
-   Dodaj ten kod na końcu pliku site.css lub stwórz oddzielny plik utilities.css
-*/
 
-/* Background Colors with proper text contrast */
 .bg-paynes-gray {
     background-color: var(--paynes-gray) !important;
     color: white !important;
@@ -981,7 +946,6 @@ main {
         color: white !important;
     }
 
-/* Gradient Backgrounds with proper text contrast */
 .bg-gradient-primary {
     background: linear-gradient(135deg, var(--true-blue) 0%, var(--true-blue-dark) 100%) !important;
     color: white !important;
@@ -1022,7 +986,6 @@ main {
         color: white !important;
     }
 
-/* Text Colors */
 .text-paynes-gray {
     color: var(--paynes-gray) !important;
 }
@@ -1047,7 +1010,7 @@ main {
     color: var(--paynes-gray-light) !important;
 }
 
-/* Border Colors */
+
 .border-paynes-gray {
     border-color: var(--paynes-gray) !important;
 }
@@ -1064,7 +1027,6 @@ main {
     border-color: var(--lapis-lazuli) !important;
 }
 
-/* Button Variants */
 .btn-paynes-gray {
     background: linear-gradient(135deg, var(--paynes-gray) 0%, var(--paynes-gray-dark) 100%);
     border: none;
@@ -1116,7 +1078,7 @@ main {
         border-color: var(--lapis-lazuli);
     }
 
-/* Card Variants with improved text contrast */
+
 .card-paynes-gray {
     background: linear-gradient(135deg, var(--paynes-gray) 0%, var(--paynes-gray-dark) 100%);
     color: white;
@@ -1170,7 +1132,7 @@ main {
         color: var(--paynes-gray-dark) !important;
     }
 
-/* Alert Variants with improved contrast */
+
 .alert-multikino-primary {
     background: linear-gradient(135deg, #cce7f0 0%, #a6d4ea 50%);
     color: #055160 !important;
@@ -1195,7 +1157,7 @@ main {
         color: #0f5132 !important;
     }
 
-/* Badge Variants with improved contrast */
+
 .badge-paynes-gray {
     background-color: var(--paynes-gray) !important;
     color: white !important;
@@ -1221,7 +1183,7 @@ main {
     border: 1px solid var(--paynes-gray-light);
 }
 
-/* Progress Bar Variants */
+
 .progress-bar-true-blue {
     background: linear-gradient(135deg, var(--true-blue) 0%, var(--lapis-lazuli) 100%) !important;
 }
@@ -1230,7 +1192,7 @@ main {
     background: linear-gradient(135deg, var(--lapis-lazuli) 0%, var(--lapis-lazuli-dark) 100%) !important;
 }
 
-/* Table Variants with improved contrast */
+
 .table-multikino {
     color: var(--paynes-gray);
 }
@@ -1259,7 +1221,7 @@ main {
             color: var(--paynes-gray);
         }
 
-/* Navbar Variants with improved contrast */
+
 .navbar-multikino {
     background: linear-gradient(135deg, var(--paynes-gray) 0%, var(--paynes-gray-dark) 100%) !important;
 }
@@ -1274,7 +1236,6 @@ main {
             color: var(--alice-blue) !important;
         }
 
-/* Form Variants with improved contrast */
 .form-control-multikino {
     border: 2px solid var(--columbia-blue);
     border-radius: 10px;
@@ -1298,7 +1259,6 @@ main {
     font-weight: 600;
 }
 
-/* Shadow Utilities */
 .shadow-multikino {
     box-shadow: 0 4px 6px rgba(79, 109, 122, 0.1) !important;
 }
@@ -1311,7 +1271,6 @@ main {
     box-shadow: 0 12px 30px rgba(79, 109, 122, 0.2) !important;
 }
 
-/* Hover Effects */
 .hover-lift {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -1329,7 +1288,6 @@ main {
         box-shadow: 0 0 20px rgba(74, 111, 165, 0.3);
     }
 
-/* Icon Colors */
 .icon-paynes-gray {
     color: var(--paynes-gray) !important;
 }
@@ -1342,7 +1300,6 @@ main {
     color: var(--lapis-lazuli) !important;
 }
 
-/* Loading Spinner with Brand Colors */
 .loading-multikino {
     display: inline-block;
     width: 20px;
@@ -1353,7 +1310,6 @@ main {
     animation: spin 1s ease-in-out infinite;
 }
 
-/* Responsive Text Colors */
 @media (max-width: 768px) {
     .text-mobile-paynes-gray {
         color: var(--paynes-gray) !important;
@@ -1364,7 +1320,6 @@ main {
     }
 }
 
-/* Dark Mode Variants (for future use) */
 @media (prefers-color-scheme: dark) {
     .auto-dark-text {
         color: var(--alice-blue) !important;
@@ -1375,7 +1330,6 @@ main {
     }
 }
 
-/* Animation Classes */
 .fade-in-multikino {
     animation: fadeInMultikino 0.6s ease-out;
 }
@@ -1408,14 +1362,12 @@ main {
     }
 }
 
-/* Focus States */
 .focus-multikino:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.3);
     border-color: var(--true-blue);
 }
 
-/* Custom Scrollbar */
 .scrollbar-multikino::-webkit-scrollbar {
     width: 8px;
 }
@@ -1434,12 +1386,7 @@ main {
     }
 
 
-/* ==============================================
-   PARTICLES BACKGROUND ANIMATION SYSTEM
-   Dodaj ten kod na końcu pliku site.css
-   ============================================== */
 
-/* Animated Particles Background */
 #particles-bg {
     position: fixed;
     top: 0;
@@ -1451,12 +1398,12 @@ main {
     overflow: hidden;
 }
 
-/* Znajdź te klasy i zmień opacity: */
+
 .particle {
     position: absolute;
     border-radius: 50%;
     animation: float 15s infinite linear;
-    opacity: 0.3; /* ZMIANA: było 0.1, teraz 0.3 */
+    opacity: 0.3; 
 }
 
     .particle.film-reel {
@@ -1465,7 +1412,7 @@ main {
         background: var(--true-blue);
         border: 3px solid var(--lapis-lazuli);
         animation: float-rotate 20s infinite linear;
-        opacity: 0.4; /* DODAJ tę linię */
+        opacity: 0.4;
     }
 
     .particle.star {
@@ -1473,18 +1420,18 @@ main {
         height: 8px;
         background: var(--lapis-lazuli);
         animation: twinkle 3s infinite ease-in-out;
-        opacity: 0.35; /* DODAJ tę linię */
+        opacity: 0.35; 
     }
 
     .particle.bubble {
         width: 20px;
         height: 20px;
-        background: rgba(74, 111, 165, 0.5); /* ZMIANA: było 0.3, teraz 0.5 */
+        background: rgba(74, 111, 165, 0.5);
         border: 1px solid var(--true-blue);
         animation: bubble-float 12s infinite ease-in-out;
     }
 
-/* Zaktualizuj animacje keyframes: */
+
 @keyframes float {
     0% {
         transform: translateY(100vh) rotate(0deg);
@@ -1492,11 +1439,11 @@ main {
     }
 
     10% {
-        opacity: 0.3; /* ZMIANA: było 0.1 */
+        opacity: 0.3; 
     }
 
     90% {
-        opacity: 0.3; /* ZMIANA: było 0.1 */
+        opacity: 0.3;
     }
 
     100% {
@@ -1512,11 +1459,11 @@ main {
     }
 
     10% {
-        opacity: 0.4; /* ZMIANA: było 0.15 */
+        opacity: 0.4;
     }
 
     90% {
-        opacity: 0.4; /* ZMIANA: było 0.15 */
+        opacity: 0.4;
     }
 
     100% {
@@ -1527,12 +1474,12 @@ main {
 
 @keyframes twinkle {
     0%, 100% {
-        opacity: 0.35; /* ZMIANA: było 0.1 */
+        opacity: 0.35;
         transform: scale(1);
     }
 
     50% {
-        opacity: 0.7; /* ZMIANA: było 0.3 */
+        opacity: 0.7; 
         transform: scale(1.2);
     }
 }
@@ -1544,7 +1491,7 @@ main {
     }
 
     10% {
-        opacity: 0.4; /* ZMIANA: było 0.2 */
+        opacity: 0.4;
     }
 
     50% {
@@ -1552,7 +1499,7 @@ main {
     }
 
     90% {
-        opacity: 0.4; /* ZMIANA: było 0.2 */
+        opacity: 0.4;
     }
 
     100% {
@@ -1561,7 +1508,6 @@ main {
     }
 }
 
-/* Hero Section Enhancements */
 .hero-particles {
     position: absolute;
     top: 0;
@@ -1593,7 +1539,6 @@ main {
     }
 }
 
-/* Feature Icons Enhancement */
 .feature-icon {
     width: 80px;
     height: 80px;
@@ -1614,7 +1559,6 @@ main {
         box-shadow: 0 12px 35px rgba(74, 111, 165, 0.4);
     }
 
-/* Statistics Counter */
 .stat-counter {
     font-size: 2.5rem;
     font-weight: bold;
@@ -1622,7 +1566,6 @@ main {
     text-shadow: 0 2px 4px rgba(74, 111, 165, 0.1);
 }
 
-/* Coming Soon Badge */
 .coming-soon-badge {
     position: absolute;
     top: 15px;
@@ -1648,13 +1591,11 @@ main {
     }
 }
 
-/* Rating Stars */
 .rating-stars {
     color: #ffc107;
     text-shadow: 0 1px 3px rgba(255, 193, 7, 0.3);
 }
 
-/* Screening Time Pills */
 .screening-time {
     background: var(--alice-blue);
     color: var(--paynes-gray);
@@ -1676,7 +1617,6 @@ main {
         box-shadow: 0 4px 15px rgba(74, 111, 165, 0.3);
     }
 
-/* Newsletter Section */
 .newsletter-section {
     background: linear-gradient(135deg, var(--paynes-gray) 0%, var(--paynes-gray-dark) 100%);
     color: white;
@@ -1710,7 +1650,6 @@ main {
     z-index: 2;
 }
 
-/* Testimonial Cards */
 .testimonial-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(219, 233, 238, 0.95) 100%);
     border-left: 4px solid var(--true-blue);
@@ -1723,7 +1662,6 @@ main {
         border-left-width: 8px;
     }
 
-/* Progress Bars */
 .progress-custom {
     height: 8px;
     border-radius: 10px;
@@ -1759,7 +1697,6 @@ main {
     }
 }
 
-/* Enhanced Button Styles */
 .btn-custom {
     background: linear-gradient(135deg, var(--true-blue) 0%, var(--lapis-lazuli) 100%);
     border: none;
@@ -1798,7 +1735,7 @@ main {
         transform: translateY(0);
     }
 
-/* Section Titles */
+
 .section-title {
     position: relative;
     margin-bottom: 3rem;
@@ -1817,7 +1754,6 @@ main {
         border-radius: 2px;
     }
 
-/* Enhanced Page Animations */
 .fade-in-up {
     animation: fadeInUp 0.8s ease-out;
 }
@@ -1866,7 +1802,7 @@ main {
     }
 }
 
-/* Enhanced Movie Cards for Homepage */
+
 .movie-card {
     transition: all 0.3s ease;
     height: 100%;
@@ -1920,7 +1856,7 @@ main {
         margin-top: auto;
     }
 
-/* Hall Icons Dynamic Coloring */
+
 .feature-icon .fa-tv {
     color: #ffffff;
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
@@ -1936,7 +1872,7 @@ main {
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
 }
 
-/* Responsive Particles */
+
 @media (max-width: 768px) {
     .particle {
         display: none;
@@ -1988,7 +1924,7 @@ main {
     }
 }
 
-/* Accessibility and Performance */
+
 @media (prefers-reduced-motion: reduce) {
     .particle,
     .hero-particle,
@@ -2005,7 +1941,7 @@ main {
     }
 }
 
-/* High contrast mode support */
+
 @media (prefers-contrast: high) {
     .particle {
         opacity: 0.3;
@@ -2020,7 +1956,7 @@ main {
     }
 }
 
-/* Print styles */
+
 @media print {
     #particles-bg,
     .hero-particles,
@@ -2040,7 +1976,7 @@ main {
 }
 
 
-/* Jednolite przyciski w sekcjach akcji */
+
 .btn-group .btn {
     min-width: 38px;
     min-height: 38px;

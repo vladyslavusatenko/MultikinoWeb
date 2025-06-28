@@ -340,5 +340,46 @@ namespace MultikinoWeb.Services
         {
             return true;
         }
+        public async Task<bool> UpdateScreeningAsync(int screeningId, EditScreeningViewModel screeningData)
+        {
+            try
+            {
+                var screening = await _context.Screenings
+                    .Include(s => s.Movie)
+                    .FirstOrDefaultAsync(s => s.ScreeningId == screeningId);
+
+                if (screening == null || screening.StartTime <= DateTime.Now)
+                    return false;
+
+                var movie = await _context.Movies.FindAsync(screeningData.MovieId);
+                if (movie == null) return false;
+
+                var endTime = screeningData.StartTime.AddMinutes(movie.Duration + 30);
+
+                // Check hall availability (excluding current screening)
+                var hallConflict = await _context.Screenings
+                    .AnyAsync(s => s.ScreeningId != screeningId &&
+                                  s.HallId == screeningData.HallId &&
+                                  ((s.StartTime >= screeningData.StartTime && s.StartTime < endTime) ||
+                                   (s.EndTime > screeningData.StartTime && s.EndTime <= endTime) ||
+                                   (s.StartTime <= screeningData.StartTime && s.EndTime >= endTime)));
+
+                if (hallConflict) return false;
+
+                // Update screening
+                screening.MovieId = screeningData.MovieId;
+                screening.HallId = screeningData.HallId;
+                screening.StartTime = screeningData.StartTime;
+                screening.EndTime = endTime;
+                screening.TicketPrice = screeningData.TicketPrice;
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
